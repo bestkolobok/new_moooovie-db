@@ -6,6 +6,12 @@ import router from './router'
 import VueYoutube from 'vue-youtube'
 import MdbConfig from './common/mdb_config'
 import 'vuetify/dist/vuetify.min.css'
+import { MdButton, MdCard } from 'vue-material/dist/components'
+import 'vue-material/dist/vue-material.min.css'
+
+Vue.use(MdButton)
+Vue.use(MdCard)
+
 // import Vuetify from 'vuetify'
 import {
     Vuetify,
@@ -68,7 +74,7 @@ Vue.use(Vuetify, {
     theme: {
         primary: '#7b1fa2',
         secondary: '#BA68C8',
-        accent: '#00E676',
+        accent: '#69F0AE',
         error: '#FF5252',
         info: '#E1BEE7',
         success: '#E1BEE7',
