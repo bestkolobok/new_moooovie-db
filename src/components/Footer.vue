@@ -34,7 +34,7 @@ export default {
       this.$eventHub[this.$route.name + 'currentPage'] = stateCurrentPage
       this.$eventHub.$emit('change-page', stateCurrentPage)
       this.currentPage = +this.$eventHub[this.$route.name + 'currentPage']
-      // console.log('stateCurrentPage', stateCurrentPage)
+      console.log('stateCurrentPage', stateCurrentPage)
     },
     setTotalPages(total){
       if(+total <= 999 || !total) {
@@ -91,15 +91,15 @@ export default {
     this.$eventHub.$on('page-reset', this.changePage)
     this.$eventHub.$on('set-total-pages', this.setTotalPages)
 
-    this.currentPage = +this.$eventHub[this.$route.name + 'currentPage'] || 1;
+    this.currentPage = +this.$eventHub[this.$route.name + 'currentPage'] || 1
     if(this.$route.name === "main"){this.pagesButtonVisible = false} else {this.pagesButtonVisible = true}
     // this.setTotalPages()
   },
   updated(){
     // console.log("beforeUpdate")
     // this.currentPage = this.$eventHub[this.$route.name + 'currentPage'];
-    this.currentPage = +this.$eventHub[this.$route.name + 'currentPage'] || 1;
-
+    this.currentPage = +this.$eventHub[this.$route.name + 'currentPage'] || 1
+    // this.$eventHub[this.$route.name + 'currentPage'] = this.currentPage
     // console.log(this.$eventHub[this.$route.name + 'total'])
     // console.log('this.currentPage', this.currentPage)
   }

@@ -5,9 +5,12 @@ import App from './App'
 import router from './router'
 import VueYoutube from 'vue-youtube'
 import MdbConfig from './common/mdb_config'
+// import '@/assets/styles/reset.scss';
 import 'vuetify/dist/vuetify.min.css'
 import { MdButton, MdCard } from 'vue-material/dist/components'
 import 'vue-material/dist/vue-material.min.css'
+import Vuebar from 'vuebar'
+Vue.use(Vuebar)
 
 Vue.use(MdButton)
 Vue.use(MdCard)
@@ -39,8 +42,10 @@ import {
     VToolbar,
     VTooltip,
     VTextField,
-    transitions
+    transitions,
+    // directives
 } from 'vuetify'
+import directives from 'vuetify/es5/directives'
 import '../node_modules/vuetify/src/stylus/app.styl'
 
 Vue.use(Vuetify, {
@@ -81,6 +86,7 @@ Vue.use(Vuetify, {
         warning: '#FFC107'
     }
 })
+Vue.use(directives)
 
 // Vue.use(Vuetify)
 Vue.use(VueYoutube)

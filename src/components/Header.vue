@@ -1,79 +1,93 @@
 <template>
-    <v-toolbar :clipped-left="$vuetify.breakpoint.mdAndUp" class="primary toolbar" dark app scroll-off-screen :scroll-threshold="50" dense prominent extended>
-        <v-toolbar-title style="width: 300px" class="ml-0 pl-3 toolbar-title">
-            <v-toolbar-side-icon @click.stop="drawerToggle"></v-toolbar-side-icon>
-            <span class="hidden-sm-and-down toolbar-title__text">MooovieLand</span>
+    <!-- <v-toolbar :clipped-left="$vuetify.breakpoint.mdAndUp" class="primary toolbar" dark app scroll-off-screen :scroll-threshold="50" dense prominent extended> -->
+    <v-toolbar 
+        v-resize="onResize"
+        :clipped-left="$vuetify.breakpoint.mdAndUp" 
+        class="primary toolbar" 
+        dark app dense :prominent="toolbarVisible && extendedVisible" :extended="toolbarVisible && extendedVisible"
+        :style="{top: '-' + onScrollStyle + 'px'}"
+    >
+        <v-toolbar-title :class="visibleSearch ? 'toolbar-title--hidden' : ''" class="ml-0 pl-3 toolbar-title">
+            <v-toolbar-side-icon @click.stop="drawerLeftToggle"></v-toolbar-side-icon>
+            <router-link to="/"><span v-if="!visibleSearch" class="toolbar-title__text" :class="titleSize">MOOOOVIELAND</span></router-link>
         </v-toolbar-title>
 
-            
+        <v-spacer v-if="!visibleSearch"></v-spacer>
 
-        <v-spacer></v-spacer>
         <v-text-field 
             flat solo-inverted 
             prepend-icon="search" 
             label="Search" 
-            class="hidden-sm-and-down"
+            class="toolbar-search"
+            :class="!visibleSearch ? 'hidden-sm-and-down' : ''"
             v-model="inputData" 
-            @keyup.enter="onSearch"
+            @keyup.enter="enterSearch"
         ></v-text-field>
-        
-        <v-btn icon>
+        <v-btn icon @click="visibleSearch = true" class="hidden-md-and-up" v-if="!visibleSearch">
+            <v-icon>search</v-icon>
+        </v-btn>
+        <v-btn icon @click.stop="drawerRightToggle" class="hidden-md-and-up">
             <v-icon>apps</v-icon>
         </v-btn>
-
-        <!-- <v-btn icon large>
-            <v-avatar size="32px" tile>
-            <img src="https://vuetifyjs.com/static/doc-images/logo.svg" alt="Vuetify">
-            </v-avatar>
-        </v-btn> -->
         <v-tabs
             slot="extension"
             v-model="currentItem"
             fixed-tabs
             color="transparent"
             slider-color="white"
+            v-if="toolbarVisible && extendedVisible"
+            class="tabs hidden-xs-only"
         >
             <v-tab
                 v-for="item in mediaTypeItems"
                 :key="item.id"
                 :href="'#tab-' + item"
                 :to="item.path"
-                >
+                ripple
+            >
                 {{ item.name }}
             </v-tab>
             <v-spacer></v-spacer>
             <v-menu
-                class="tabs__div"
+                class="tabs__div tabs__genre hidden-sm-and-down"
+                :class="genreActive"
                 :close-on-content-click="false"
+                v-model="closeGenresArea"
                 origin="center center"
                 transition="scale-transition"
                 bottom
-                >
-                <span class="tabs__item" slot="activator" dark>
-                    Жанр
-                </span>
-                <v-list>
-                    <v-list-tile v-for="(item, i) in genresName" :key="i" :data-id="item.id" @click="genreListMark">
+                v-show="genresToolbarVisible"
+            >
+                <span class="tabs__item" slot="activator" dark>Жанр</span>
+                <v-list class="tabs__genre-list">
+                    <v-btn fab small dark color="accent" @click="closeGenresArea = false">
+                        <v-icon dark>close</v-icon>
+                    </v-btn>
+                    <v-btn fab small dark color="error" @click="genreListRemove" v-show="allGenresVisible">
+                        <v-icon dark>delete_forever</v-icon>
+                    </v-btn>
+
+                    <v-list-tile class="genres-child-elem" v-for="(item, i) in genresName" :key="i" :data-id="item.id" @click="genreListSet" ripple>
                         <v-list-tile-title >{{ item.name }}</v-list-tile-title>
                     </v-list-tile>
                 </v-list>
             </v-menu> 
             <v-menu
-                class="tabs__div"
+                class="tabs__div tabs__category hidden-sm-and-down"
+                :class="categoryActive"
                 origin="center center"
                 transition="scale-transition"
                 bottom
+                v-show="genresToolbarVisible"
                 >
-                <span class="tabs__item" slot="activator" dark>
-                    Категория
-                </span>
-                <v-list v-if="visibleMovieCategory">
-                    <v-list-tile v-for="(item, i) in categoryItems" :key="i" :data-path="item.moviePath" @click="categoryItemsMark">
+                <span class="tabs__item" slot="activator" dark>Категория</span>
+                <v-list v-show="visibleMovieCategory">
+                    <v-list-tile class="movies-child-elem" v-for="(item, i) in movieItems" :key="i" :data-path="item.moviePath" @click="categoryItemsSet">
                         <v-list-tile-title >{{ item.categoryMovie }}</v-list-tile-title>
                     </v-list-tile>
                 </v-list>
-                <v-list v-if="visibleTvCategory">
-                    <v-list-tile v-for="(item, i) in categoryItems" :key="i" :data-path="item.tvPath" @click="categoryItemsMark">
+                <v-list v-show="visibleTvCategory">
+                    <v-list-tile class="tv-child-elem" v-for="(item, i) in tvItems" :key="i" :data-path="item.tvPath" @click="categoryItemsSet">
                         <v-list-tile-title >{{ item.categoryTv }}</v-list-tile-title>
                     </v-list-tile>
                 </v-list>
@@ -91,12 +105,20 @@ export default {
     components: { Fetch },
     data(){
         return{
+            visibleSearch: false,
             visibleMovieCategory: false,
             visibleTvCategory: false,
-            toolbarVisible: true,
             genresToolbarVisible: false,
-            titleSize:'',
-            drawer: false,
+            allGenresVisible: false,
+            closeGenresArea: false,
+            toolbarVisible: true,
+            extendedVisible: true,
+            genreActive: '',
+            categoryActive: '',
+            onScrollStyle: 0,
+            onScrollOffsetOld: 0,
+            titleSize:'title',
+            // drawer: false,
             genresName: [],
             genresSelectElement: null,
             selectedGenres: [],
@@ -110,67 +132,125 @@ export default {
                 {name: "Сериалы", path: "/series"},
                 {name: "актеры", path: "/actors"}
             ],
-            categoryItems: [
-                { categoryMovie: 'Все фильмы', categoryTv: 'Все сериалы', moviePath: "/movies", tvPath: "/series"},
-                { categoryMovie: 'Премьеры', categoryTv: 'Популярные', moviePath: "/movies/upcoming", tvPath: "/series/popular" },
-                { categoryMovie: 'Популярные', categoryTv: 'Сейчас на экранах', moviePath: "/movies/nowPlaying", tvPath: "/series/onTheAir" },
-                { categoryMovie: 'Топ 100', categoryTv: 'Топ 100', moviePath: "/movies/topRated", tvPath: "/series/topRated" }
+            movieItems: [
+                { categoryMovie: 'Все фильмы', moviePath: "/movies"},
+                { categoryMovie: 'Премьеры', moviePath: "/movies/upcoming"},
+                { categoryMovie: 'Сейчас на экранах', moviePath: "/movies/nowPlaying"},
+                { categoryMovie: 'Популярные', moviePath: "/movies/Popular"},
+                { categoryMovie: 'Топ 100', moviePath: "/movies/topRated"},
             ],
+            tvItems: [
+                {categoryTv: 'Все сериалы', tvPath: "/series"},
+                {categoryTv: 'Популярные', tvPath: "/series/popular" },
+                {categoryTv: 'Сейчас на экранах', tvPath: "/series/onTheAir" },
+                {categoryTv: 'Топ 100', tvPath: "/series/topRated" },
+            ],
+
             currentItem: null,
 
         }
     },
     methods: {
-        drawerToggle () {
-            this.$eventHub.$emit('toggle-drawer')
+        drawerLeftToggle () {
+            this.$eventHub.$emit('toggle-drawer-left')
         },
-        genreListMark(e) {
-            e.currentTarget.classList.toggle('success')
-            if(e.currentTarget.classList.contains('success')){
-                this.selectedGenres.push(e.currentTarget.firstChild.dataset.id)
+        drawerRightToggle () {
+            this.$eventHub.$emit('toggle-drawer-right')
+            this.$eventHub.$emit('change-genre-header', this.selectedGenres)
+        },
+        genreListSet(e){
+            const currentId = e.currentTarget.firstChild.dataset.id
+            if(this.selectedGenres.indexOf(currentId) === -1){
+                this.selectedGenres.push(currentId)
             }else{
-                const deleteId = this.selectedGenres.indexOf(e.currentTarget.firstChild.dataset.id)
+                const deleteId = this.selectedGenres.indexOf(currentId)
                 this.selectedGenres.splice(deleteId, 1)
             }
-            this.changeGenre(this.selectedGenres)
-            this.genresSelectElement = Array.from(e.currentTarget.parentNode.children)
+            this.genreListMark()
+            this.$eventHub.$emit('change-genre-header', this.selectedGenres)
+            // console.log('this.selectedGenres', this.selectedGenres)
+        },
+        genreListMark(selectedGenres){
+            const child = document.querySelector(".genres-child-elem")
+            if(child !== null){
+                const elementsGroup = Array.from(child.parentNode.children)
+                // console.log('elementsGroup', elementsGroup)
+                elementsGroup.forEach(elem => { 
+                    const id = elem.firstChild.dataset.id
+                    if(elem.classList.contains('success')){elem.classList.remove('success')}
+                    if(this.selectedGenres.indexOf(id) !== -1){elem.classList.add('success')} 
+                })
+            }
+            this.allGenresVisible = this.selectedGenres.length > 0 
+            this.changeGenre(selectedGenres)
         },
         genreListRemove() {
-            if(this.genresSelectElement){this.genresSelectElement.forEach(element => { element.classList.remove('success') })}
             this.selectedGenres = []
+            this.genreListMark([])
+            this.allGenresVisible = false
         },
-        categoryItemsMark(e) {
-            const elements = Array.from(e.currentTarget.parentNode.children)
-            elements.forEach(element => { element.classList.remove('success') })
-            if(e.currentTarget.firstChild.dataset.path !== "/movies" && e.currentTarget.firstChild.dataset.path !== "/series"){e.currentTarget.classList.add('success')}
+        categoryItemsSet(e) {
+            // const elements = Array.from(e.currentTarget.parentNode.children)
+            // elements.forEach(element => { element.classList.remove('success') })
+            // if(e.currentTarget.firstChild.dataset.path !== "/movies" && e.currentTarget.firstChild.dataset.path !== "/series"){e.currentTarget.classList.add('success')}
             this.changeCategory(e.currentTarget.firstChild.dataset.path)
-            console.log(e.currentTarget.firstChild.dataset.path)
+            this.categoryItemsMark()
+            // console.log(e.currentTarget.firstChild.dataset.path)
+        },
+        categoryItemsMark() {
+            let child
+            child = this.visibleMovieCategory ? document.querySelector(".movies-child-elem") : null
+            child = this.visibleTvCategory ? document.querySelector(".mtv-child-elem") : null
+
+            // if(this.visibleMovieCategory){child = document.querySelector(".movies-child-elem")}
+            // if(this.visibleTvCategory){child = document.querySelector(".tv-child-elem")}
+            if(child !== null){
+                const elementsGroup = Array.from(child.parentNode.children)
+                elementsGroup.forEach(elem => { 
+                    const path = elem.firstChild.dataset.path
+                    if(elem.classList.contains('success')){elem.classList.remove('success')}
+                    if(this.$route.path === path){elem.classList.add('success')} 
+                })
+            }
         },
 
-        clearInput: _.debounce(function(){this.inputData = null}, 8000, { 'leading': false }),
+        clearInput: _.debounce(function(){
+                this.inputData = null
+                this.visibleSearch = false
+            }, 
+            8000, 
+            { 
+                'leading': false 
+            }
+        ),
 
-        onSearch($event){
+        onSearch(){
             if (this.$route.name.indexOf("movies") !== -1){this.$router.push('/movies/search')} else
             if (this.$route.name.indexOf("series") !== -1){this.$router.push('/series/search')} else
             if (this.$route.name.indexOf("actors") !== -1){this.$router.push('/actors/search')} else
-            {this.$router.push(`/main/search`)}
+            {this.$router.push(`/search`)}
             
             window.setTimeout(()=>{
                 this.$eventHub.$emit('start-search', null, this.inputData);
             }, 0)
         },
+        enterSearch(){
+            this.onSearch()
+            this.visibleSearch = false
+        },
         changeCategory(category){
             this.$router.push(category);
         },
         setGenresList(mediaCategory, type){
-            this.genresName = []
-            this.genreListRemove()
-
-            if (typeof this.$eventHub[this.$route.name + 'list' + type] !== 'undefined') {
-                this.genresName = this.$eventHub[this.$route.name + 'list' + type]
+            // this.genresName = []
+            // this.genreListRemove()
+            if (typeof this.$eventHub['list' + type] !== 'undefined') {
+                this.genresName = this.$eventHub['list' + type]
             } else {
-                this.genresName = Fetch.setGenresList(mediaCategory)
-                console.log('Fetch', this.genresName)
+                Fetch.setGenresList(mediaCategory).then(data => {
+                    this.genresName = data
+                    this.$eventHub['list' + type] = data
+                })
             }
         },
         changeGenre(id){
@@ -182,6 +262,7 @@ export default {
                 this.$eventHub.$emit('genre-select', id, "tv")
                 // this.$eventHub['selectedGenres_series'] = this.selectedGenres;
             }
+            this.$eventHub.selectedGenres_current = this.selectedGenres;
             // if(this.routeName === this.routeNameOld){
                 this.$eventHub.$emit('page-reset', 1);
             // }
@@ -189,15 +270,31 @@ export default {
             // this.showCloseButton();
         },
         watchRoutes(to,from){
-            if (to.name === "main"){ this.toolbarVisible = false; this.titleSize = "md-display-2";} 
-            else {this.toolbarVisible = true; this.titleSize = "md-title";}
+            if(from !== undefined && !((to.path.indexOf("movies") !== -1 && from.path.indexOf("movies") !== -1) || (to.path.indexOf("series") !== -1 && from.path.indexOf("series") !== -1)) ) {this.genreListRemove()}
+            if (to.name === "main" || to.name === "search"){ this.toolbarVisible = false; this.titleSize = "headline"} 
+            else {this.toolbarVisible = true; this.titleSize = "title";}
 
-            if (to.name.indexOf("movies") !== -1){this.visibleMovieCategory = true; this.setGenresList('movie', 'movies')}else{this.visibleMovieCategory = false}
-            if (to.name.indexOf("series") !== -1){this.visibleTvCategory = true; this.setGenresList('tv', 'series')}else{this.visibleTvCategory = false}
-            if (to.name.indexOf("movies") !== -1 || to.name.indexOf("series") !== -1){this.genresToolbarVisible = true}else{this.genresToolbarVisible = false}
+            if (to.path.indexOf("movies") !== -1){this.visibleMovieCategory = true; this.setGenresList('movie', 'movies')}else{this.visibleMovieCategory = false}
+            if (to.path.indexOf("series") !== -1){this.visibleTvCategory = true; this.setGenresList('tv', 'series')}else{this.visibleTvCategory = false}
+            if (to.path.indexOf("movies") !== -1 || to.name.indexOf("series") !== -1){this.genresToolbarVisible = true}else{this.genresToolbarVisible = false}
             if (to.name === "movies" || to.name === "series"){this.categorySelected = ''}
-
             this.searchLabel = to.name.indexOf("movies") !== -1 ? 'фильмов' : to.name.indexOf("series") !== -1 ? 'сериалов' : to.name.indexOf("actors") !== -1 ? 'актеров' : 'по сайту';
+            this.categoryItemsMark()
+            this.$eventHub.$emit('update-category')
+        },
+        scrollHeader(offset){
+            if(offset > this.onScrollOffsetOld + 50){this.onScrollStyle = 50}else 
+            if(offset < this.onScrollOffsetOld - 50){this.onScrollStyle = 0}
+            setTimeout(()=>this.onScrollOffsetOld = offset, 300)
+        },
+        onResize () {
+            this.extendedVisible = window.innerWidth < 600 ? false : true
+            // console.log(this.extendedVisible)
+        },
+        changeGenreDrawer(selectedGenres){
+            this.genreListMark(selectedGenres)
+            this.selectedGenres = selectedGenres
+            // console.log('changeGenreDrawer', this.selectedGenres)
         }
     },
     watch: {
@@ -208,13 +305,14 @@ export default {
         },
         genresName(){
             this.$eventHub.genres_current = this.genresName
+            this.$eventHub.$emit('update-genre', this.genresName)
         },
         inputData(){
             if(this.inputData){
                 this.onSearchDebounse();
                 this.clearInput();
             }
-        }
+        },
     },
     created(){
         this.onSearchDebounse = _.debounce(this.onSearch, 1000)
@@ -223,18 +321,32 @@ export default {
     mounted(){
         const to = this.$route
         this.watchRoutes(to)
+        this.$eventHub.$on('scroll-header', this.scrollHeader)
+        this.$eventHub.$on('change-genre-drawer', this.changeGenreDrawer)
+        this.$eventHub.$on('genres-list-remove', this.genreListRemove)
     }
 }
 </script>
 
 <style lang="scss" scoped>
-    .list{
-        &__tile{
-         
+    .toolbar{
+        .toolbar-title{
+            width: 340px;
+            &__text{
+                color: white;
+            }
         }
-        &__tile__title{
+        .toolbar-title--hidden{
+            width: 68px;
+        }
+        .tabs{
             
+            &__div--active{
+                border: 1px solid white;
+            }
+
         }
     }
-
+    
 </style>
+

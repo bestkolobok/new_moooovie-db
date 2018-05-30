@@ -3,8 +3,10 @@ import MdbConfig from '@/common/mdb_config.js'
 let dateNow = new Date()
 const releaseMonthBefore = MdbConfig.releaseMonthBefore
 const releaseMonthAfter = MdbConfig.releaseMonthAfter
-const releaseDateMax = `${(dateNow.getMonth() + releaseMonthBefore) < 12 ? dateNow.getFullYear() : (dateNow.getFullYear() + 1)}-${(dateNow.getMonth() + releaseMonthBefore) < 12 ? (dateNow.getMonth() + releaseMonthBefore) : (dateNow.getMonth() + releaseMonthAfter)}-${dateNow.getDay()}`
-const releaseDateMin = `${(dateNow.getMonth() + releaseMonthAfter) > 0 ? dateNow.getFullYear() : (dateNow.getFullYear() - 1)}-${(dateNow.getMonth() + releaseMonthAfter) > 0 ? (dateNow.getMonth() + releaseMonthAfter) : (dateNow.getMonth() + releaseMonthBefore)}-${dateNow.getDay()}`
+const nowPlaingMonthAfter = MdbConfig.nowPlaingMonthAfter
+const releaseDateMax = `${(dateNow.getMonth() + releaseMonthBefore) < 12 ? dateNow.getFullYear() : (dateNow.getFullYear() + 1)}-${(dateNow.getMonth() + releaseMonthBefore) < 12 ? (dateNow.getMonth() + releaseMonthBefore) : (dateNow.getMonth() - 12 + releaseMonthBefore)}-${dateNow.getDay()}`
+const releaseDateMin = `${(dateNow.getMonth() + releaseMonthAfter) > 0 ? dateNow.getFullYear() : (dateNow.getFullYear() - 1)}-${(dateNow.getMonth() + releaseMonthAfter) > 0 ? (dateNow.getMonth() + releaseMonthAfter) : (dateNow.getMonth() + 12 + releaseMonthAfter)}-${dateNow.getDay()}`
+const nowPlaingDateMin = `${(dateNow.getMonth() + nowPlaingMonthAfter) > 0 ? dateNow.getFullYear() : (dateNow.getFullYear() - 1)}-${(dateNow.getMonth() + nowPlaingMonthAfter) > 0 ? (dateNow.getMonth() + nowPlaingMonthAfter) : (dateNow.getMonth() + 12 + nowPlaingMonthAfter)}-${dateNow.getDay()}`
 const airDate = `${dateNow.getFullYear()}-${dateNow.getMonth()}-${dateNow.getDay()}`
 
 
@@ -13,18 +15,16 @@ export default {
     apiKey: MdbConfig.apiKey,
     language: MdbConfig.language,
     region: MdbConfig.region,
-    // airDate: airDate,
-    // releaseDateMax: releaseDateMax,
-    // releaseDateMin: releaseDateMin,
-
+    airDate: airDate,
+    releaseDateMax: releaseDateMax,
+    releaseDateMin: releaseDateMin,
+    nowPlaingDateMin: nowPlaingDateMin,
 
     setGenresList(category) {
-        let genresList
-        axios
+        return axios
             .get(`https://api.themoviedb.org/3/genre/${category}/list?api_key=${this.apiKey}&language=${this.language}`)
-            .then(data => { this.genresList = Object.assign({}, data.data.genres) })
-            .catch(function(error) { console.log(error) })
-        return this.genresList
+            .then(data => data.data.genres)
+            .catch(error => { console.error(error); return Promise.reject(error) })
     },
 
     getSearchCollection(page, categoryUrl, searchQuery) {
@@ -49,6 +49,13 @@ export default {
     },
 
     getMoviesNowPlaying(page, genresSelected) {
+        return axios
+            .get(`https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.language}&page=${page}&sort_by=popularity.desc&release_date.gte=${this.nowPlaingDateMin}&release_date.lte=${this.airDate}&region=${this.region}${genresSelected}`)
+            .then(data => data.data)
+            .catch(error => { console.error(error); return Promise.reject(error) })
+    },
+
+    getMoviesPopular(page, genresSelected) {
         return axios
             .get(`https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.language}&page=${page}&sort_by=popularity.desc&region=${this.region}${genresSelected}`)
             .then(data => data.data)
@@ -83,6 +90,11 @@ export default {
             .catch(error => { console.error(error); return Promise.reject(error) })
     },
 
-
+    getItemPages(id, mediaType, item) {
+        return axios
+            .get(`https://api.themoviedb.org/3/${mediaType}/${id}${item}?api_key=${this.apiKey}&language=${this.language}`)
+            .then(data => data.data)
+            .catch(error => { console.error(error); return Promise.reject(error) })
+    },
 
 }

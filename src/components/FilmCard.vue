@@ -1,5 +1,5 @@
 <template>
-    <div class="card-container" @click.exact="goToItem">
+    <div class="card-container" @click.exact.stop="goToItem">
         <md-card>
             <md-card-media-cover md-text-scrim>
                 <md-card-media md-ratio="4:3" >

@@ -1,6 +1,6 @@
 <template>
     <v-list dense>
-        <template v-for="item in items">
+        <template v-for="item in pages">
           <v-layout v-if="item.heading" :key="item.heading" row align-center>
             <v-flex xs6>
               <v-subheader v-if="item.heading">
@@ -19,7 +19,7 @@
                 </v-list-tile-title>
               </v-list-tile-content>
             </v-list-tile>
-            <v-list-tile v-for="(child, i) in item.children" :key="i" @click="">
+            <v-list-tile v-for="(child, i) in item.children" :key="i" @click="choisePage(child.link)">
               <v-list-tile-action v-if="child.icon">
                 <v-icon>{{ child.icon }}</v-icon>
               </v-list-tile-action>
@@ -30,7 +30,7 @@
               </v-list-tile-content>
             </v-list-tile>
           </v-list-group>
-          <v-list-tile v-else :key="item.text" @click="">
+          <v-list-tile v-else :key="item.text" @click="choisePage(item.link)">
             <v-list-tile-action>
               <v-icon>{{ item.icon }}</v-icon>
             </v-list-tile-action>
@@ -50,34 +50,36 @@ export default {
   name: 'DrawerLeft',
   data(){
     return{
-            items: [
-        { icon: 'contacts', text: 'Contacts' },
-        { icon: 'history', text: 'Frequently contacted' },
-        { icon: 'content_copy', text: 'Duplicates' },
-        { icon: 'keyboard_arrow_up', 'icon-alt': 'keyboard_arrow_down', text: 'Labels', model: true,
+      pages: [
+        { icon: 'movie', text: 'Фильмы', link: '/movies' },
+        { icon: 'tv', text: 'Сериалы', link: '/series' },
+        { icon: 'people', text: 'Актеры', link: '/actors' },
+        { icon: 'keyboard_arrow_up', 'icon-alt': 'keyboard_arrow_down', text: 'Категории фильмов', model: false,
           children: [
-            { icon: 'add', text: 'Create label' }
+            { text: 'Премьеры', link: '/movies/upcoming' },
+            { text: 'Сейчас на экранах', link: '/movies/nowPlaying' },
+            { text: 'Популярные', link: '/movies/Popular' },
+            { text: 'Топ 100', link: '/movies/topRated' }
           ]
         },
-        {
-          icon: 'keyboard_arrow_up',
-          'icon-alt': 'keyboard_arrow_down',
-          text: 'More',
-          model: false,
+        { icon: 'keyboard_arrow_up', 'icon-alt': 'keyboard_arrow_down', text: 'Категории сериалов', model: false,
           children: [
-            { text: 'Import' },
-            { text: 'Export' },
-            { text: 'Print' },
-            { text: 'Undo changes' },
-            { text: 'Other contacts' }
+            { text: 'Популярные', link: '/series/popular' },
+            { text: 'Сейчас на экранах', link: '/series/onTheAir' },
+            { text: 'Топ 100', link: '/series/topRated' }
           ]
         },
-        { icon: 'settings', text: 'Settings' },
-        { icon: 'chat_bubble', text: 'Send feedback' },
-        { icon: 'help', text: 'Help' },
-        { icon: 'phonelink', text: 'App downloads' },
-        { icon: 'keyboard', text: 'Go to the old version' }
+        { icon: 'bookmark', text: 'Закладки', link: '/' },
+        { icon: 'history', text: 'История просмотра', link: '/' },
+        { icon: 'search', text: 'История поиска', link: '/' },
+        { icon: 'account_circle', text: 'Вход в аккаунт', link: '/' },
       ]
+    }
+  },
+  methods: {
+    choisePage(link){
+      this.$router.push(link)
+      this.pages.forEach(item => {item.model ? item.model = false : null})
     }
   }
 }

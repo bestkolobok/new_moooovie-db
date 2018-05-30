@@ -3,5 +3,6 @@ export default {
     language: "ru-RUS",
     region: "UA",
     releaseMonthBefore: 9,
-    releaseMonthAfter: -3
+    releaseMonthAfter: -1,
+    nowPlaingMonthAfter: -3
 }

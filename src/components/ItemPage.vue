@@ -1,85 +1,98 @@
 <template>
-    <div class="item-container" @keyup.right="goBeforePage">
-        <md-button class="md-icon-button md-accent close-button md-elevation-1" @click="closeWindow">
-          <md-icon>close</md-icon>
-        </md-button>
-        <div class="navigate navigate-left" @click="goBeforePage" v-show="beforeButtonVisible">
-            <md-icon>navigate_before</md-icon>
-            <div class="navigate_empty"></div>
+    <div class="item-container grey darken-4"  
+        v-touch="{
+        left: () => swipe('Left'),
+        right: () => swipe('Right')
+        }"
+    >
+        <v-btn outline class="close-button" flat icon color="grey lighten-1" @click="closeWindow"><v-icon>close</v-icon></v-btn>
+ 
+        <div class="navigate navigate-left hidden-xs-only" v-show="beforeButtonVisible">
+            <v-btn large class="navigate__button" flat icon color="white" @click="goBeforePage" @keyup.right="goBeforePage"><v-icon>navigate_before</v-icon></v-btn>
         </div>
-        <div class="navigate navigate-right" @click="goNextPage" @keyup.left="goNextPage" v-show="nextButtonVisible">
-            <div class="navigate_empty"></div>
-            <md-icon>navigate_next</md-icon>
+        <div class="navigate navigate-right hidden-xs-only" v-show="nextButtonVisible">
+            <v-btn large class="navigate__button" flat icon color="white" @click="goNextPage" @keyup.left="goNextPage"><v-icon>navigate_next</v-icon></v-btn>
         </div>
 
 
-        <md-content class="md-scrollbar content">
-            <div class="content__top-row md-layout md-gutter md-alignment-top-center">
-                <div class="content__poster-area md-layout-item md-large-size-33 md-medium-size-33 md-small-size-33 md-xsmall-size-100">
+        <v-container class="content" :class="xsmallContent" grid-list-lg v-resize="onResize">
+            <v-layout row wrap class="content__top-row" align-start>
+                <v-flex class="content__poster-area" xs12 sm6 md4>
                     <img :src="posterImage" :alt="title">
-                </div>
-                <div class="content__text-area md-layout-item md-large-size-66 md-medium-size-66 md-small-size-66 md-xsmall-size-100">
-                    <div class="content__title">
-                        <span class="md-title">{{title}}</span>
-                    </div>
-                    <div class="content__rate-bar md-layout md-gutter md-alignment-center-space-around">
-                        <div class="content__rate md-layout-item md-size-33">
-                            <span class="md-subheading">Рейтинг {{vote}}</span>
-                        </div> 
-                        <div class="content__rate md-layout-item md-size-20">
-                            <md-button class="md-icon-button" v-if="favorite" @click="addFavorite"><md-icon>favorite</md-icon></md-button>
-                            <md-button class="md-icon-button" v-else @click="addFavorite"><md-icon>favorite_border</md-icon></md-button>
-                        </div> 
-                        <div class="content__rate md-layout-item md-size-20">
-                            <md-button class="md-icon-button" v-if="bookmarkItem" @click="addBookmark"><md-icon>bookmark</md-icon></md-button>
-                            <md-button class="md-icon-button" v-else @click="addBookmark"><md-icon>bookmark_border</md-icon></md-button>
-                        </div>   
-                    </div>
-                    <div class="content__ganre md-layout md-gutter md-alignment-center-left">
-                        <div class="content__genre-title md-layout-item md-size-10">
-                            <span class="md-subheading">Жанр: </span>
-                        </div> 
-                        <div class="content__genre-item-layout-item md-size-90" v-for="item in genres" :key="item.id">
-                            <span class="md-body-2">&nbsp; &nbsp;{{item}}</span>
-                        </div> 
-                        
-                    </div>
+                </v-flex>
+
+                <v-flex class="content__text-area" xs12 sm6 md8>
+                    <v-layout class="content__title-wrap">
+                        <v-flex class="content__title" justify-center>
+                            <span class="content__title-text title">{{title}}</span>
+                        </v-flex>
+                    </v-layout>
+                    <v-layout row wrap class="content__tools-area primary">
+                        <v-flex align-center class="content__rate" xs6 sm12 md3>
+                            <div><span class="content__rate-title subheading">Рейтинг: </span></div>
+                            <div><span class="content__rate-text display-1">&nbsp;&nbsp;{{vote}}</span></div>
+                        </v-flex>
+                        <v-flex class="content__rate" xs3 sm6 md1>
+                            <v-btn class="content__rate-button" flat icon color="white" v-if="favorite" @click="addFavorite"><v-icon>favorite</v-icon></v-btn>
+                            <v-btn class="content__rate-button" flat icon color="white" v-else @click="addFavorite"><v-icon>favorite_border</v-icon></v-btn>
+                        </v-flex>
+                        <v-flex class="content__rate" xs3 sm6 md1>
+                            <v-btn class="content__rate-button" flat icon color="white" v-if="bookmarkItem" @click="addBookmark"><v-icon>bookmark</v-icon></v-btn>
+                            <v-btn class="content__rate-button" flat icon color="white" v-else @click="addBookmark"><v-icon>bookmark_border</v-icon></v-btn>
+                        </v-flex>
+                        <v-flex align-center class="content__genre" xs12 sm12 md7>
+                            <div class="content__genre-title"><span class="subheading">Жанр: </span></div>
+                            <div class="content__genre-items">
+                                <div v-for="(item, i) in genres" :key="item.id"><span> &nbsp;{{item}}</span><span v-if="i < genres.length - 1">, </span></div>
+                            </div>
+                        </v-flex>
+                    </v-layout>
                     <div class="content__owerviev">
                         <span class="md-body-2">{{overview}}</span>
                     </div>
-                </div>
-            </div>
-            <div class="content__video-row md-layout md-gutter md-alignment-top-center">
-                <div class="content__video-area md-layout-item md-size-100">
-                    <!-- <div class="content__video-conteiner" v-for="item in movieItems" :key="item.id">
-                        <img src="" alt="">
-                    </div>  -->
-                </div>
-            </div>
+
+                </v-flex>
+            </v-layout>
+            <v-layout class="content__video-row" row wrap>
+                <v-flex class="content__video-area" xs12 sm12 md12>
+                    <scroll-field class="scroll" :videos="currentVideosKey"></scroll-field>
+                </v-flex>
+            </v-layout>
+            
+
+                
+
             <!-- <video-gallery></video-gallery> -->
-            <scroll-field class="scroll" :videos="currentVideosKey"></scroll-field>
-        </md-content>
-        <img class="null-image" :src="posterImage" :alt="title">
+            
+        </v-container>
+
+        <!-- <img class="null-image" :src="posterImage" :alt="title"> -->
     </div>
 </template>
 
 <script>
 /* eslint-disable */
 import axios from 'axios'
-import VideoGallery from './Gallery.vue'
+import Fetch from '@/common/fetch.js'
+// import VideoGallery from './Gallery.vue'
 import ScrollField from './ScrollField.vue'
 
 export default {
     name: 'ItemPage',
-    components: { VideoGallery, ScrollField },
+    components: { 
+        // VideoGallery, 
+        ScrollField 
+        },
     data: () => ({
         language: "uk-UA",
         // language: "ru-RUS",
         region: "UA",
         apiKey: "8e2cc7ff01fa51e26900ce7e019c1293",
         // categoryUrl: '',
+        swipeDirection: null,
         beforeButtonVisible: true,
         nextButtonVisible: true,
+        xsmallContent: '',
         favorite: false,
         bookmarkItem: false,
         posterImage: '',
@@ -111,6 +124,7 @@ export default {
     // },
     mounted(){
         this.itemNumber = this.$eventHub["current_item_number"];
+        console.log("this.itemNumber", this.itemNumber)
         // let mediaType
         // if (this.$route.path.indexOf("main") !== -1){mediaType = this.$eventHub.current_items[this.$eventHub["current_item_number"]].media_type}
         // if (this.$route.path.indexOf("movies") !== -1){mediaType = "movie"}
@@ -119,7 +133,8 @@ export default {
         const item = this.$eventHub.current_items[this.$eventHub["current_item_number"]]
         const startId = item.id
         let mediaType = this.checkMediaType(item)
-        // console.log("THIS ITEM mediaType", mediaType)
+        console.log("THIS ITEM mediaType", mediaType)
+        console.log("THIS ITEM startId", startId)
 
         // this.$eventHub.fetchingItems[this.categoryUrl][startId + '/videos'] = null
         // this.videoInit = this.$eventHub.fetchingItems[this.categoryUrl][startId + '/videos']
@@ -136,35 +151,28 @@ export default {
 
   },
     methods:{
+
         fetchData(id, mediaType) {
-            console.log("FETCH mediaType", mediaType)
             const dataList = [
                 '', 
-                '/images', 
-                '/videos', 
+                // '/images', 
+                // '/videos', 
                 // '/similar'
             ]
+
             dataList.forEach(item => {
-                // console.log("FETCH axios", this.categoryUrl, id + item)
-                // console.log("FETCH axios", this.$eventHub.fetchingItems[this.categoryUrl]["id" + id + item])
+                const catchResponse = (response) => {
+                    this.$eventHub.fetchingItems[mediaType]["id" + id + item] = response
+                    this.nullImage = item === '' ? 'https://image.tmdb.org/t/p/w600_and_h900_bestv2' + this.$eventHub.fetchingItems[mediaType]["id" + id].poster_path : this.nullImage
+                    if(id === this.$eventHub.current_items[this.$eventHub["current_item_number"]].id){
+                        this.updateItemData()
+                        // console.log("FETCH updateItemData()")
+                    } 
+                }
                 if(!this.$eventHub.fetchingItems[mediaType]["id" + id + item] && !(mediaType === 'person' && item === '/videos')){
-                    axios
-                    .get(`https://api.themoviedb.org/3/${mediaType}/${id}${item}?api_key=${this.apiKey}&language=${this.language}`)
-                    .then(data => {
-                        this.$eventHub.fetchingItems[mediaType]["id" + id + item] = Object.assign({}, data.data);
-                        this.nullImage = item === '' ? 'https://image.tmdb.org/t/p/w600_and_h900_bestv2' + this.$eventHub.fetchingItems[mediaType]["id" + id].poster_path : this.nullImage
-                        // console.log("FETCH axios", this.$eventHub.fetchingItems[this.categoryUrl])
-                        // console.log("FETCH ITEMS"+item, this.$eventHub.fetchingItems[this.categoryUrl]["id" + id].poster_path) 
-                        if(id === this.$eventHub.current_items[this.$eventHub["current_item_number"]].id){
-                            this.updateItemData()
-                            // console.log("FETCH updateItemData()")
-                        }        
-                    })
-                    .catch(function (error) { console.log(error) })
+                    Fetch.getItemPages(id, mediaType, item).then(data => catchResponse(data))
                 }
             })
-
-
         },
         fetchCollections(){
             const items = this.$eventHub.current_items;
@@ -219,9 +227,11 @@ export default {
             this.cangePageButtons();
         },
         goNextPage(){
-            if (this.itemNumber === 19 && this.$eventHub[this.$route.name  + 'currentPage'] < this.$eventHub[this.$route.name  + 'total']){
+            console.log('NextPage', this.$eventHub[this.$route.name + 'currentPage'], this.$eventHub[this.$route.name  + 'total'])
+            if (this.itemNumber === 19 && this.$eventHub[this.$route.name + 'currentPage'] < this.$eventHub[this.$route.name  + 'total']){
                 this.$eventHub.$emit('update-page', this.$eventHub[this.$route.name  + 'currentPage'] + 1);
                 this.itemNumber = 0;
+                
             }else{
                 this.itemNumber = this.itemNumber < this.maxItemNumber ? this.itemNumber + 1 : this.itemNumber;
                 this.updateItemData();
@@ -239,13 +249,23 @@ export default {
             this.nextButtonVisible = this.itemNumber < this.maxItemNumber || this.itemNumber === 19 ? true : false;
         },
         checkMediaType(item){
-            // console.log('MEDIATYPE', item)
-            let mediaType
-            if (this.$route.path.indexOf("main") !== -1){mediaType = item.media_type}
+            // console.log('MEDIATYPE', item.media_type)
+            let mediaType = ''
+            if (this.$route.name === "search"){mediaType = item.media_type}
             if (this.$route.path.indexOf("movies") !== -1){mediaType = "movie"}
             if (this.$route.path.indexOf("series") !== -1){mediaType = "tv"}
             if (this.$route.path === "actors"){mediaType = "person"}
+            console.log('MEDIATYPE', mediaType)
             return mediaType
+        },
+        swipe (direction) {
+            // this.swipeDirection = direction
+            if(direction === 'Left'){this.goNextPage()}
+            if(direction === 'Right'){this.goBeforePage()}
+            console.log('swipe', direction)
+        },
+        onResize () {
+            this.xsmallContent = window.innerWidth < 600 ? 'content--xsmall' : ''
         }
     },
     watch: {
@@ -270,36 +290,33 @@ export default {
 
 <style lang="scss" scoped>
 .item-container {
-    min-width: 90vw;
-    height: 90vh;
-    // padding: 14px 40px;
-    // overflow-y: auto;
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
     .close-button{
         position: absolute;
         top: 0;
         right: 0;
-        .md-icon-font{
-            font-size: 36px !important;
-        }
+        z-index: 300;
     }
     .navigate{
         display: flex;
-        align-content: center;
         position: absolute;
         height: 100%;
         width: 60px;
-        cursor: pointer;
-        .md-icon-font{
-            display: none;
-            font-size: 36px !important;
-            transform: scaleY(4);
-        }
-        .navigate_empty{
-            width: 30px;
+        &__button{
+            align-self: center;
+            z-index: 200;
+            i{
+                color: gray;
+                font-size: 36px;
+            }
         }
     }
-    .navigate:hover .md-icon-font{
-            display: flex;
+    .navigate:hover .navigate__button{
+        i{
+            color: white;
+        }
     }
     
     .navigate-left{
@@ -309,17 +326,22 @@ export default {
        right: 0;
     }
     .content{
-        padding: 20px 40px;
-        overflow-y: auto;
+        padding: 20px 80px 20px 62px;
+        margin: 0 -18px 0 0;
+        flex-wrap: wrap;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        width: calc(100% + 18px);
+        max-width: calc(100% + 18px);
         height: 100%;
-        // &.__top-row{
-        //     justify-content: flex-start;
-        //     // align-content: flex-start;
-        //     // align-items: flex-start;
-        // }
-        // &__text-area{
-        //     align-self: flex-start;
-        // }
+        align-content: flex-start;
+
+        &__text-area{
+            padding-left: 16px !important;
+        }
+        &__top-row{
+            width: 100%;
+        }
         &__poster-area{
             img{
               box-shadow: 0px 20px 40px 10px rgba(0, 0, 0, 0.541);  
@@ -327,33 +349,59 @@ export default {
         }
         &__title {
             display: flex;
-            padding-bottom: 30px;
+            margin-bottom: 30px;
             align-content: center;
             justify-content: center;
             // span{
             //     line-height: 3;
             // } 
         }
-        &__rate-bar{
-            padding-bottom: 30px;
+        &__tools-area{
+            margin-bottom: 30px;
+            // background-color: #7b1fa2;
         }
-        &__ganre{
-            padding-bottom: 30px;
-            background-color: #7b1fa2;
+        &__rate{
+            display: flex;
+        }
+        &__rate-text{
+            color: #69F0AE;
+        }
+        &__genre{
+            display: flex;
+            // justify-content: flex-end;
+        }
+        &__genre-title{
+            margin-left: 20px;
+            color: #69F0AE;
+        }
+        &__genre-items{
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-left: 6px;
+            span{
+                text-align: center;
+            }
+        }
+        &__genre-item{
+            display: flex;
         }
         &__owerviev{
             margin-top: 20px;
             text-align: justify;
             text-indent: 20px;
+            margin-left: -8px;
+            margin-right: -8px;
+        }
+        &__video-row{
+            width: 100%;
         }
         &__video-area{
             padding-top: 30px;
         }
-        &__video-conteiner{
-            height: 200px;
-            min-width: 100%;
-            background-color: #7b1fa2;
-        }
+    }
+    .content--xsmall{
+        padding: 20px 40px 20px 22px;
     }
 
 }
@@ -361,10 +409,14 @@ export default {
     margin-top: 40px;
     width: 100%;
 }
-.null-image{
-    position: absolute;
-    bottom: 0;
-    width: 0;
-    height: 0;
-}
+// .null-image{
+//     position: absolute;
+//     bottom: 0;
+//     width: 0;
+//     height: 0;
+// }
+
 </style>
+
+
+
