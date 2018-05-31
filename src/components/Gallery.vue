@@ -1,78 +1,59 @@
 <template>
     <div id="app">
-        <gallery 
+        <gallery :class="$vuetify.breakpoint.smAndUp ? 'gallery' : 'gallery-xs'"
             :images="images" 
             :index="index" 
-            :options="{youTubeVideoIdProperty: 'youtube', youTubePlayerVars: undefined, youTubeClickToPlay: true}"
-            @close="index = null"
+            @close="close"
         ></gallery>
         <div class="scroll-bar">
             <div class="image"
                 v-for="(image, imageIndex) in images"
                 :key="image.id" 
-                @click="index = imageIndex"
-                :style="{ backgroundImage: 'url(' + image.poster + ')', width: '300px', height: '200px' }">
+                @click="open(imageIndex)"
+                :style="{ 
+                    backgroundImage: 'url(' + image + ')', 
+                    width: $vuetify.breakpoint.smAndUp ?  $vuetify.breakpoint.lgAndUp ? 'calc(25% - 10px)' : 'calc(33.3% - 10px)' : '100%', 
+                    height: '200px' 
+                }"
+            >
             </div>
         </div>
-        
     </div>
 </template>
 
 <script>
 import VueGallery from 'vue-gallery';
 export default {
-    name: 'VideoGallery',
+    name: 'ImageGallery',
     components: {'gallery': VueGallery},
-    props: ['searchData'],
+    props: ['fetchingImages'],
     data: () => ({
-        images: [
-            {
-                // id: 1,
-                title: 'A YouYube video',
-                href: 'https://www.youtube.com/watch?v=hNdlUHBJDKs',
-                type: 'text/html',
-                youtube: 'hNdlUHBJDKs',
-                poster: 'https://img.youtube.com/vi/hNdlUHBJDKs/maxresdefault.jpg'
-            },
-            {
-                // id: 2,
-                title: 'A YouYube video 2',
-                href: 'https://www.youtube.com/watch?v=s5iUsaPPtnk',
-                type: 'text/html',
-                youtube: 's5iUsaPPtnk',
-                poster: 'https://img.youtube.com/vi/s5iUsaPPtnk/maxresdefault.jpg'
-            },
-            {
-                // id: 3,
-                title: 'Image',
-                href: 'https://dummyimage.com/1600/ffffff/000000',
-                type: 'image/jpeg',
-                poster: 'https://dummyimage.com/350/ffffff/000000'
-            },
-            {
-                // id: 1,
-                title: 'A YouYube video',
-                href: 'https://www.youtube.com/watch?v=hNdlUHBJDKs',
-                type: 'text/html',
-                youtube: 'hNdlUHBJDKs',
-                poster: 'https://img.youtube.com/vi/hNdlUHBJDKs/maxresdefault.jpg'
-            },
-            {
-                // id: 2,
-                title: 'A YouYube video 2',
-                href: 'https://www.youtube.com/watch?v=s5iUsaPPtnk',
-                type: 'text/html',
-                youtube: 's5iUsaPPtnk',
-                poster: 'https://img.youtube.com/vi/s5iUsaPPtnk/maxresdefault.jpg'
-            },
-            
-        ],
+        images: [],
         index: null
-
-
     }),
     methods:{
-       
+        open(imageIndex){
+            this.index = imageIndex
+            this.$eventHub.$emit('stop-change-item', true)
+        },
+        close(){
+            this.index = null
+            this.$eventHub.$emit('stop-change-item', false)
+        }
+        // updateImages(){
+        //     this.images = []
+        //     this.fetchingImages.forEach((item, i) => {
+        //         this.images[i] = 'https://image.tmdb.org/t/p/w500/' + item.file_path
+        //     }) 
+        // }
+    },
+    watch: {
+        fetchingImages(){
+            this.images = []
+            this.fetchingImages.forEach((item, i) => {
+                this.images[i] = 'https://image.tmdb.org/t/p/w500/' + item.file_path
+            }) 
+        }
     }
     
 }
@@ -80,8 +61,8 @@ export default {
 
 <style lang="scss" scoped>
     .image {
-        display: inline-block;
-        // float: left;
+        // display: inline-block;
+        float: left;
         background-size: cover;
         background-repeat: no-repeat;
         background-position: center center;
@@ -89,10 +70,21 @@ export default {
         margin: 5px;
     }
 
-  .scroll-bar{
-      max-width: 80vw;
-      white-space: nowrap; 
-      overflow-x: scroll;
+    .scroll-bar{
+        //   max-width: 80vw;
+        //   white-space: nowrap; 
+        //   overflow-x: scroll;
 
   }
+    .gallery{
+        margin: 30px;
+    }
+    // .gallery-xs{
+    //     .prev{
+    //         display: none;
+    //     }
+    //     .next{
+    //         display: none;
+    //     }
+    // }
 </style>

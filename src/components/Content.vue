@@ -3,7 +3,7 @@
     <div class="item-page">
       <v-dialog 
         v-model="itemPageVisible" 
-        class="item-page-area" 
+        class="item-page__area" 
         width="1200px" 
         :fullscreen="$vuetify.breakpoint.xsOnly"
       >
@@ -174,6 +174,9 @@ export default {
 
 <style lang="scss" scoped>
   // .item-page{
-  //   z-index: 400;
+  //   &__area{
+  //     overflow: hidden; 
+  //     height: 100%;
+  //   }
   // }
 </style>

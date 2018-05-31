@@ -4,6 +4,7 @@
         left: () => swipe('Left'),
         right: () => swipe('Right')
         }"
+        :style="{ height: $vuetify.breakpoint.smAndUp ? ' 90vh;' : '100vh;' }">
     >
         <v-btn outline class="close-button" flat icon color="grey lighten-1" @click="closeWindow"><v-icon>close</v-icon></v-btn>
  
@@ -17,53 +18,52 @@
 
         <v-container class="content" :class="xsmallContent" grid-list-lg v-resize="onResize">
             <v-layout row wrap class="content__top-row" align-start>
+                <v-flex class="content__title" justify-center xs12>
+                    <span class="content__title-text title">{{title}}</span>
+                </v-flex>
                 <v-flex class="content__poster-area" xs12 sm6 md4>
                     <img :src="posterImage" :alt="title">
                 </v-flex>
 
                 <v-flex class="content__text-area" xs12 sm6 md8>
-                    <v-layout class="content__title-wrap">
-                        <v-flex class="content__title" justify-center>
+                    <v-layout class="" wrap>
+                        <!-- <v-flex class="content__title hidden-sm-and-down" justify-center xs12>
                             <span class="content__title-text title">{{title}}</span>
+                        </v-flex> -->
+                        <v-flex class="content__tools-area primary" xs12>
+                            <v-layout row wrap class="content__tools-area primary">
+                                <v-flex v-if="visibleRateGenre" align-center class="content__rate" xs6 sm8 md3>
+                                    <div><span class="content__rate-title subheading">Рейтинг: </span></div>
+                                    <div><span class="content__rate-text display-1">&nbsp;&nbsp;{{vote}}</span></div>
+                                </v-flex>
+                                <v-flex class="content__rate" xs3 sm2 md1>
+                                    <v-btn class="content__rate-button" flat icon color="white" v-if="favorite" @click="addFavorite"><v-icon>favorite</v-icon></v-btn>
+                                    <v-btn class="content__rate-button" flat icon color="white" v-else @click="addFavorite"><v-icon>favorite_border</v-icon></v-btn>
+                                </v-flex>
+                                <v-flex class="content__rate" xs3 sm2 md1>
+                                    <v-btn class="content__rate-button" flat icon color="white" v-if="bookmarkItem" @click="addBookmark"><v-icon>bookmark</v-icon></v-btn>
+                                    <v-btn class="content__rate-button" flat icon color="white" v-else @click="addBookmark"><v-icon>bookmark_border</v-icon></v-btn>
+                                </v-flex>
+                                <v-flex v-if="visibleRateGenre" align-center class="content__genre" xs12 sm12 md6 offset-md1>
+                                    <div class="content__genre-title"><span class="subheading">Жанр: </span></div>
+                                    <div class="content__genre-items">
+                                        <div v-for="(item, i) in genres" :key="item.id"><span> &nbsp;{{item}}</span><span v-if="i < genres.length - 1">, </span></div>
+                                    </div>
+                                </v-flex>
+                            </v-layout>
+                        </v-flex>
+                        <v-flex class="content__owerviev" xs12>
+                            <span class="md-body-2">{{overview}}</span>
                         </v-flex>
                     </v-layout>
-                    <v-layout row wrap class="content__tools-area primary">
-                        <v-flex align-center class="content__rate" xs6 sm12 md3>
-                            <div><span class="content__rate-title subheading">Рейтинг: </span></div>
-                            <div><span class="content__rate-text display-1">&nbsp;&nbsp;{{vote}}</span></div>
-                        </v-flex>
-                        <v-flex class="content__rate" xs3 sm6 md1>
-                            <v-btn class="content__rate-button" flat icon color="white" v-if="favorite" @click="addFavorite"><v-icon>favorite</v-icon></v-btn>
-                            <v-btn class="content__rate-button" flat icon color="white" v-else @click="addFavorite"><v-icon>favorite_border</v-icon></v-btn>
-                        </v-flex>
-                        <v-flex class="content__rate" xs3 sm6 md1>
-                            <v-btn class="content__rate-button" flat icon color="white" v-if="bookmarkItem" @click="addBookmark"><v-icon>bookmark</v-icon></v-btn>
-                            <v-btn class="content__rate-button" flat icon color="white" v-else @click="addBookmark"><v-icon>bookmark_border</v-icon></v-btn>
-                        </v-flex>
-                        <v-flex align-center class="content__genre" xs12 sm12 md7>
-                            <div class="content__genre-title"><span class="subheading">Жанр: </span></div>
-                            <div class="content__genre-items">
-                                <div v-for="(item, i) in genres" :key="item.id"><span> &nbsp;{{item}}</span><span v-if="i < genres.length - 1">, </span></div>
-                            </div>
-                        </v-flex>
-                    </v-layout>
-                    <div class="content__owerviev">
-                        <span class="md-body-2">{{overview}}</span>
-                    </div>
-
                 </v-flex>
-            </v-layout>
-            <v-layout class="content__video-row" row wrap>
                 <v-flex class="content__video-area" xs12 sm12 md12>
                     <scroll-field class="scroll" :videos="currentVideosKey"></scroll-field>
                 </v-flex>
+                <v-flex class="content__images-area" xs12 sm12 md12 v-if="currentImages !== null && currentImages.length > 0">
+                    <image-gallery :fetchingImages="currentImages"></image-gallery>
+                </v-flex>
             </v-layout>
-            
-
-                
-
-            <!-- <video-gallery></video-gallery> -->
-            
         </v-container>
 
         <!-- <img class="null-image" :src="posterImage" :alt="title"> -->
@@ -74,22 +74,19 @@
 /* eslint-disable */
 import axios from 'axios'
 import Fetch from '@/common/fetch.js'
-// import VideoGallery from './Gallery.vue'
+import ImageGallery from './Gallery.vue'
 import ScrollField from './ScrollField.vue'
 
 export default {
     name: 'ItemPage',
     components: { 
-        // VideoGallery, 
+        ImageGallery, 
         ScrollField 
         },
     data: () => ({
-        language: "uk-UA",
-        // language: "ru-RUS",
-        region: "UA",
-        apiKey: "8e2cc7ff01fa51e26900ce7e019c1293",
         // categoryUrl: '',
-        swipeDirection: null,
+        // swipeDirection: null,
+        visibleRateGenre: true,
         beforeButtonVisible: true,
         nextButtonVisible: true,
         xsmallContent: '',
@@ -114,7 +111,8 @@ export default {
         vote: '',
         genreIds: [],
         genres: [],
-        nullImage: ''
+        nullImage: '',
+        stopChangePage: false
 
     }),
     // beforeMount(){
@@ -148,6 +146,7 @@ export default {
         // console.log("THIS ITEM mounted mounted", this.currentItems)
 
         // &append_to_response=videos,images,similar
+        this.$eventHub.$on('stop-change-item', state => this.stopChangePage = state)
 
   },
     methods:{
@@ -162,14 +161,17 @@ export default {
 
             dataList.forEach(item => {
                 const catchResponse = (response) => {
-                    this.$eventHub.fetchingItems[mediaType]["id" + id + item] = response
+                    // this.$eventHub.fetchingItems[mediaType]["id" + id + item] = response
+                    this.$eventHub.fetchingItems[mediaType]["id" + id] = response
                     this.nullImage = item === '' ? 'https://image.tmdb.org/t/p/w600_and_h900_bestv2' + this.$eventHub.fetchingItems[mediaType]["id" + id].poster_path : this.nullImage
                     if(id === this.$eventHub.current_items[this.$eventHub["current_item_number"]].id){
                         this.updateItemData()
-                        // console.log("FETCH updateItemData()")
+                        
                     } 
+                    console.log("FETCH updateItemData()", response)
                 }
-                if(!this.$eventHub.fetchingItems[mediaType]["id" + id + item] && !(mediaType === 'person' && item === '/videos')){
+                // if(!this.$eventHub.fetchingItems[mediaType]["id" + id + item] && !(mediaType === 'person' && item === '/videos')){
+                if(!this.$eventHub.fetchingItems[mediaType]["id" + id] && !(mediaType === 'person' && item === '/videos')){    
                     Fetch.getItemPages(id, mediaType, item).then(data => catchResponse(data))
                 }
             })
@@ -190,14 +192,25 @@ export default {
             this.date = this.currentItem.release_date || this.currentItem.first_air_date || '';
             this.dateArray = this.date.split("-");
             this.year = this.date !== '' ? this.dateArray[0] : '';
-            this.overview = this.currentItem.overview || '';
+            // this.overview = this.currentItem.overview || this.currentItem.biography || '';
+            
             this.vote = this.currentItem.vote_average || '';
             const currentId = this.currentItem.id
             const mediaType = this.checkMediaType(this.currentItem)
-            this.currentDetails = this.$eventHub.fetchingItems[mediaType]["id" + currentId] ? this.$eventHub.fetchingItems[mediaType]["id" + currentId].results : [];
-            this.currentImages = this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/images'] ? this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/images'].results : [];
-            this.currentVideosKey = this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/videos'] ? this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/videos'].results : [];
-            this.currentSimilar = this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/smilar'] ? this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/smilar'].results : [];
+            // this.currentDetails = this.$eventHub.fetchingItems[mediaType]["id" + currentId] ? this.$eventHub.fetchingItems[mediaType]["id" + currentId].results : [];
+            // this.currentImages = this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/images'] ? this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/images'].results : [];
+            // this.currentVideosKey = this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/videos'] ? this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/videos'].results : [];
+            if(this.$eventHub.fetchingItems[mediaType]["id" + currentId]){
+                this.currentDetails = this.$eventHub.fetchingItems[mediaType]["id" + currentId]
+                this.currentVideosKey = this.$eventHub.fetchingItems[mediaType]["id" + currentId].videos.results
+                this.currentImages = this.$eventHub.fetchingItems[mediaType]["id" + currentId].images.posters || this.$eventHub.fetchingItems[mediaType]["id" + currentId].images.profiles
+                this.overview = this.$eventHub.fetchingItems[mediaType]["id" + currentId].overview || this.$eventHub.fetchingItems[mediaType]["id" + currentId].biography || '';
+            }
+            
+            // this.currentVideosKey = this.$eventHub.fetchingItems[mediaType]["id" + currentId] ? this.$eventHub.fetchingItems[mediaType]["id" + currentId].videos.results : [];
+            
+            
+            // this.currentSimilar = this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/smilar'] ? this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/smilar'].results : [];
             // console.log('video ID',  this.currentVideosKey)
             // console.log('this.currentId',  this.currentId)
             // console.log('this.categoryUrl',  this.categoryUrl)
@@ -212,6 +225,7 @@ export default {
                     }
                 });
             } 
+           this.visibleRateGenre = this.$route.path !== "/actors"
         },
         closeWindow(){
             this.$eventHub.$emit('close-window');
@@ -224,7 +238,7 @@ export default {
                 this.itemNumber = this.itemNumber > 0 ? this.itemNumber - 1 : this.itemNumber;
                 this.updateItemData();
             }
-            this.cangePageButtons();
+            this.changePageButtons();
         },
         goNextPage(){
             console.log('NextPage', this.$eventHub[this.$route.name + 'currentPage'], this.$eventHub[this.$route.name  + 'total'])
@@ -236,7 +250,7 @@ export default {
                 this.itemNumber = this.itemNumber < this.maxItemNumber ? this.itemNumber + 1 : this.itemNumber;
                 this.updateItemData();
             } 
-            this.cangePageButtons();
+            this.changePageButtons();
         },
         addFavorite(){
             this.favorite = !this.favorite;
@@ -244,7 +258,7 @@ export default {
         addBookmark(){
             this.bookmarkItem = !this.bookmarkItem;
         },
-        cangePageButtons(){
+        changePageButtons(){
             this.beforeButtonVisible = this.itemNumber > 0 || this.$eventHub[this.$route.name + 'currentPage'] > 1 ? true : false;
             this.nextButtonVisible = this.itemNumber < this.maxItemNumber || this.itemNumber === 19 ? true : false;
         },
@@ -254,14 +268,14 @@ export default {
             if (this.$route.name === "search"){mediaType = item.media_type}
             if (this.$route.path.indexOf("movies") !== -1){mediaType = "movie"}
             if (this.$route.path.indexOf("series") !== -1){mediaType = "tv"}
-            if (this.$route.path === "actors"){mediaType = "person"}
+            if (this.$route.path === "/actors"){mediaType = "person"}
             console.log('MEDIATYPE', mediaType)
             return mediaType
         },
         swipe (direction) {
             // this.swipeDirection = direction
-            if(direction === 'Left'){this.goNextPage()}
-            if(direction === 'Right'){this.goBeforePage()}
+            if(direction === 'Left' && !this.stopChangePage){this.goNextPage()}
+            if(direction === 'Right' && !this.stopChangePage){this.goBeforePage()}
             console.log('swipe', direction)
         },
         onResize () {
@@ -272,7 +286,7 @@ export default {
         itemInit(val){
             this.itemNumber = this.$eventHub["current_item_number"];
             this.updateItemData();
-            this.cangePageButtons();
+            this.changePageButtons();
             // console.log('itemInit(val)')
         },
         // videoInit(){
@@ -291,7 +305,7 @@ export default {
 <style lang="scss" scoped>
 .item-container {
     position: relative;
-    height: 100vh;
+    // height: 90vh;
     overflow: hidden;
     .close-button{
         position: absolute;
@@ -302,7 +316,7 @@ export default {
     .navigate{
         display: flex;
         position: absolute;
-        height: 100%;
+        height: 90vh;
         width: 60px;
         &__button{
             align-self: center;
@@ -333,7 +347,7 @@ export default {
         overflow-x: hidden;
         width: calc(100% + 18px);
         max-width: calc(100% + 18px);
-        height: 100%;
+        height: 85vh;
         align-content: flex-start;
 
         &__text-area{
@@ -358,6 +372,7 @@ export default {
         }
         &__tools-area{
             margin-bottom: 30px;
+            margin-top: 8px;
             // background-color: #7b1fa2;
         }
         &__rate{
@@ -371,7 +386,7 @@ export default {
             // justify-content: flex-end;
         }
         &__genre-title{
-            margin-left: 20px;
+            // margin-left: 20px;
             color: #69F0AE;
         }
         &__genre-items{
@@ -383,9 +398,9 @@ export default {
                 text-align: center;
             }
         }
-        &__genre-item{
-            display: flex;
-        }
+        // &__genre-item{
+        //     display: flex;
+        // }
         &__owerviev{
             margin-top: 20px;
             text-align: justify;
@@ -393,11 +408,12 @@ export default {
             margin-left: -8px;
             margin-right: -8px;
         }
-        &__video-row{
-            width: 100%;
-        }
         &__video-area{
             padding-top: 30px;
+        }
+        &__images-area{
+            height: 100%;
+            z-index: 500;
         }
     }
     .content--xsmall{
