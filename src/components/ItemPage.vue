@@ -16,7 +16,11 @@
         </div>
 
 
-        <v-container class="content" :class="xsmallContent" grid-list-lg v-resize="onResize">
+        <v-container class="content" 
+            :class="$vuetify.breakpoint.xsOnly ? 'content--xsmall' : ''" 
+            grid-list-lg 
+            v-resize="onResize"
+        >
             <v-layout row wrap class="content__top-row" align-start>
                 <v-flex class="content__title" justify-center xs12>
                     <span class="content__title-text title">{{title}}</span>
@@ -58,7 +62,8 @@
                     </v-layout>
                 </v-flex>
                 <v-flex class="content__video-area" xs12 sm12 md12>
-                    <scroll-field class="scroll" :videos="currentVideosKey"></scroll-field>
+                    <!-- <scroll-field class="scroll" :videos="currentVideosKey"></scroll-field> -->
+                    <video-gallery :fetchingVideos="currentVideosKey"> </video-gallery>
                 </v-flex>
                 <v-flex class="content__images-area" xs12 sm12 md12 v-if="currentImages !== null && currentImages.length > 0">
                     <image-gallery :fetchingImages="currentImages"></image-gallery>
@@ -75,12 +80,14 @@
 import axios from 'axios'
 import Fetch from '@/common/fetch.js'
 import ImageGallery from './Gallery.vue'
+import VideoGallery from './VideoGallery.vue'
 import ScrollField from './ScrollField.vue'
 
 export default {
     name: 'ItemPage',
     components: { 
-        ImageGallery, 
+        ImageGallery,
+        VideoGallery,
         ScrollField 
         },
     data: () => ({
@@ -316,7 +323,7 @@ export default {
     .navigate{
         display: flex;
         position: absolute;
-        height: 90vh;
+        height: 85vh;
         width: 60px;
         &__button{
             align-self: center;
@@ -418,6 +425,7 @@ export default {
     }
     .content--xsmall{
         padding: 20px 40px 20px 22px;
+        height: 100vh;
     }
 
 }
