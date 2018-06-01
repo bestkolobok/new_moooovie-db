@@ -11,9 +11,9 @@
       </v-dialog>
     </div>
       
-    <v-container fluid grid-list-lg>
+    <v-container fluid grid-list-lg class="itemcards-area">
       <v-layout row wrap>
-        <v-flex xs12 sm6 md3 v-for="(item, i) in movieItems" :key="item.id">
+        <v-flex class="itemcard-conteiner" xs12 sm6 md3 v-for="(item, i) in movieItems" :key="item.id">
           <film-card :item="item" :keyItem="i"> </film-card>
         </v-flex>
       </v-layout>
@@ -110,9 +110,9 @@ export default {
         this.setPages(response.total_pages, response.page)
       }
       // if (this.oldRouteName !== route.name){this.$eventHub[route.name + 'currentPage'] = 1}
+
       if(typeof this.$eventHub[route.name + page + 'genre' + this.genreSetString] !== 'undefined'){
-         catchResponse(this.$eventHub[route.name + page + 'genre' + this.genreSetString])
-        // this.setState(this.movieItems, totalPages, currentPage, this.genresSelected)
+        catchResponse(this.$eventHub[route.name + page + 'genre' + this.genreSetString])
       } else { 
         if (route.name === "movies"){Fetch.getItemCollection(page, "discover/movie", this.genresSelected).then(data => catchResponse(data))}
         if (route.name === "series"){Fetch.getItemCollection(page, "discover/tv", this.genresSelected).then(data => catchResponse(data))}
@@ -124,19 +124,22 @@ export default {
         if (route.name === "seriesPopular"){Fetch.getSeriesPopular(page, this.genresSelected).then(data => catchResponse(data))}
         if (route.name === "seriesOnTheAir"){Fetch.getSeriesOnTheAir(page, this.genresSelected).then(data => catchResponse(data))}
         if (route.name === "seriesTopRated"){Fetch.getSeriesTopRated(page, this.genresSelected).then(data => catchResponse(data))}
+        if (route.name === "bookmarks"){
+          this.movieItems = this.$eventHub.bookmarks
+          this.setPages(1, 1)
+        }
+        if (route.name === "viewed"){
+          this.movieItems = this.$eventHub.viewed
+          this.setPages(1, 1)
+        }
       }
+      
     },
-    // setState(result, totalPages, page, genre){
-    //   console.log('TotalPages', totalPages)
-    //   this.$eventHub[this.$route.name + page + 'genre' + genre] = result;
-    //   this.$eventHub[this.$route.name + 'total'] = totalPages || this.$eventHub[this.$route.name + 'total'];
-    //   this.$eventHub[this.$route.name + 'currentPage'] = page || this.$eventHub[this.$route.name + 'currentPage'];
-    //   this.$eventHub[this.$route.name + 'current_genre'] = genre;
-    // },
     changePage(page){
       if(this.$route.path.indexOf("search") !== -1){this.getSearch(page, null)}else{this.getCategory(page, this.$route)}
     },
     genresSelectCategory(data, item){
+      console.log('genresSelectCategory', data, item)
       this.genreSetString = data.join('_');
       // if(item === "movie"){
       //   this.genresMovies = data.join(',')
@@ -166,17 +169,27 @@ export default {
       },
     movieItems(val){
       this.$eventHub["current_items"] = this.movieItems;
-      if(this.itemPageVisible){this.$eventHub.$emit('update-item-page');}
+      if(this.itemPageVisible){this.$eventHub.$emit('update-item-page')}
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+  #search-container{
+    // width: 100%;
+    // .itemcards-area{
+    //   width: calc(100% - 64px);
+    // }
+  }
   // .item-page{
   //   &__area{
   //     overflow: hidden; 
   //     height: 100%;
   //   }
+  // }
+  // .itemcard-conteiner{
+  //   padding: 0!important;
+  //   margin: 8px;
   // }
 </style>

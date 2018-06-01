@@ -1,10 +1,10 @@
 <template>
     <div class="item-container grey darken-4"  
         v-touch="{
-        left: () => swipe('Left'),
-        right: () => swipe('Right')
+            left: () => swipe('Left'),
+            right: () => swipe('Right')
         }"
-        :style="{ height: $vuetify.breakpoint.smAndUp ? ' 90vh;' : '100vh;' }">
+        :style="{ height: $vuetify.breakpoint.smAndUp ? ' 90vh;' : '100vh;' }"
     >
         <v-btn outline class="close-button" flat icon color="grey lighten-1" @click="closeWindow"><v-icon>close</v-icon></v-btn>
  
@@ -26,7 +26,8 @@
                     <span class="content__title-text title">{{title}}</span>
                 </v-flex>
                 <v-flex class="content__poster-area" xs12 sm6 md4>
-                    <img :src="posterImage" :alt="title">
+                    <span class="content__poster-year display-2">{{year}}</span>
+                    <img class="content__poster-image" :src="posterImage" :alt="title">
                 </v-flex>
 
                 <v-flex class="content__text-area" xs12 sm6 md8>
@@ -51,7 +52,7 @@
                                 <v-flex v-if="visibleRateGenre" align-center class="content__genre" xs12 sm12 md6 offset-md1>
                                     <div class="content__genre-title"><span class="subheading">Жанр: </span></div>
                                     <div class="content__genre-items">
-                                        <div v-for="(item, i) in genres" :key="item.id"><span> &nbsp;{{item}}</span><span v-if="i < genres.length - 1">, </span></div>
+                                        <div v-for="(item, i) in genres" :key="item.id"><span> &nbsp;{{item.name}}</span><span v-if="i < genres.length - 1">, </span></div>
                                     </div>
                                 </v-flex>
                             </v-layout>
@@ -61,17 +62,17 @@
                         </v-flex>
                     </v-layout>
                 </v-flex>
-                <v-flex class="content__video-area" xs12 sm12 md12>
+                <v-flex class="content__video-area" xs12 sm12 md12 v-if="currentVideosKey.length > 0">
                     <!-- <scroll-field class="scroll" :videos="currentVideosKey"></scroll-field> -->
+                    <p class="title text-xs-center">Видео</p>
                     <video-gallery :fetchingVideos="currentVideosKey"> </video-gallery>
                 </v-flex>
                 <v-flex class="content__images-area" xs12 sm12 md12 v-if="currentImages !== null && currentImages.length > 0">
+                    <p class="title text-xs-center">Фото</p>
                     <image-gallery :fetchingImages="currentImages"></image-gallery>
                 </v-flex>
             </v-layout>
         </v-container>
-
-        <!-- <img class="null-image" :src="posterImage" :alt="title"> -->
     </div>
 </template>
 
@@ -112,11 +113,11 @@ export default {
         currentSimilar: null,
         // currentItems: null,
         title: '',
-        date: '',
+        // date: '',
         year: '',
         overview: '',
         vote: '',
-        genreIds: [],
+        // genreIds: [],
         genres: [],
         nullImage: '',
         stopChangePage: false
@@ -129,7 +130,7 @@ export default {
     // },
     mounted(){
         this.itemNumber = this.$eventHub["current_item_number"];
-        console.log("this.itemNumber", this.itemNumber)
+        console.log("current_items", this.$eventHub.current_items)
         // let mediaType
         // if (this.$route.path.indexOf("main") !== -1){mediaType = this.$eventHub.current_items[this.$eventHub["current_item_number"]].media_type}
         // if (this.$route.path.indexOf("movies") !== -1){mediaType = "movie"}
@@ -137,6 +138,7 @@ export default {
         // if (this.$route.path === "actors"){mediaType = "person"}
         const item = this.$eventHub.current_items[this.$eventHub["current_item_number"]]
         const startId = item.id
+        console.log("THIS ITEM", item)
         let mediaType = this.checkMediaType(item)
         console.log("THIS ITEM mediaType", mediaType)
         console.log("THIS ITEM startId", startId)
@@ -154,125 +156,133 @@ export default {
 
         // &append_to_response=videos,images,similar
         this.$eventHub.$on('stop-change-item', state => this.stopChangePage = state)
-
+        if(this.$eventHub.favorites.indexOf(startId) !== -1){this.favorite = true}
+        if(this.$eventHub.bookmarks.indexOf(this.currentItem) !== -1){this.bookmarkItem = true}
   },
     methods:{
 
         fetchData(id, mediaType) {
-            const dataList = [
-                '', 
-                // '/images', 
-                // '/videos', 
-                // '/similar'
-            ]
+            // const dataList = [
+            //     '', 
+            //     // '/images', 
+            //     // '/videos', 
+            //     // '/similar'
+            // ]
 
-            dataList.forEach(item => {
+            // dataList.forEach(item => {
                 const catchResponse = (response) => {
                     // this.$eventHub.fetchingItems[mediaType]["id" + id + item] = response
                     this.$eventHub.fetchingItems[mediaType]["id" + id] = response
-                    this.nullImage = item === '' ? 'https://image.tmdb.org/t/p/w600_and_h900_bestv2' + this.$eventHub.fetchingItems[mediaType]["id" + id].poster_path : this.nullImage
+                    // this.nullImage = item === '' ? 'https://image.tmdb.org/t/p/w600_and_h900_bestv2' + this.$eventHub.fetchingItems[mediaType]["id" + id].poster_path : this.nullImage
                     if(id === this.$eventHub.current_items[this.$eventHub["current_item_number"]].id){
                         this.updateItemData()
                         
                     } 
-                    console.log("FETCH updateItemData()", response)
+                    // console.log("FETCH updateItemData()", response)
                 }
                 // if(!this.$eventHub.fetchingItems[mediaType]["id" + id + item] && !(mediaType === 'person' && item === '/videos')){
-                if(!this.$eventHub.fetchingItems[mediaType]["id" + id] && !(mediaType === 'person' && item === '/videos')){    
-                    Fetch.getItemPages(id, mediaType, item).then(data => catchResponse(data))
+                if(!this.$eventHub.fetchingItems[mediaType]["id" + id]){    
+                    Fetch.getItemPages(id, mediaType).then(data => catchResponse(data))
                 }
-            })
+            // })
         },
         fetchCollections(){
             const items = this.$eventHub.current_items;
             items.forEach(item => {
                 setTimeout(this.fetchData(item.id, this.checkMediaType(item)), 400)
                 // console.log("fetchCollections", item.id)
-            });
+            })
         },
         updateItemData(){
-            this.maxItemNumber = this.$eventHub.current_items.length - 1 || 19;
-            this.currentItem = this.$eventHub.current_items[this.itemNumber];
-            const posterPath = this.currentItem.poster_path || this.currentItem.profile_path || null;
-            this.posterImage = posterPath ? 'https://image.tmdb.org/t/p/w600_and_h900_bestv2' + posterPath : require('../assets/img/template.png');
-            this.title = this.currentItem.title || this.currentItem.name || '';
-            this.date = this.currentItem.release_date || this.currentItem.first_air_date || '';
-            this.dateArray = this.date.split("-");
-            this.year = this.date !== '' ? this.dateArray[0] : '';
-            // this.overview = this.currentItem.overview || this.currentItem.biography || '';
-            
-            this.vote = this.currentItem.vote_average || '';
+            this.maxItemNumber = this.$eventHub.current_items.length - 1 || 19
+            this.currentItem = this.$eventHub.current_items[this.itemNumber]
+            const posterPath = this.currentItem.poster_path || this.currentItem.profile_path || null
+            this.posterImage = posterPath ? 'https://image.tmdb.org/t/p/w600_and_h900_bestv2' + posterPath : require('../assets/img/template.png')
+            this.title = this.currentItem.title || this.currentItem.name || ''
+            const date = this.currentItem.release_date || this.currentItem.first_air_date || ''
+            const dateArray = date.split("-")
+            this.year = this.date !== '' ? dateArray[0] : ''
+            this.vote = this.currentItem.vote_average || ''
             const currentId = this.currentItem.id
             const mediaType = this.checkMediaType(this.currentItem)
-            // this.currentDetails = this.$eventHub.fetchingItems[mediaType]["id" + currentId] ? this.$eventHub.fetchingItems[mediaType]["id" + currentId].results : [];
-            // this.currentImages = this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/images'] ? this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/images'].results : [];
-            // this.currentVideosKey = this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/videos'] ? this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/videos'].results : [];
             if(this.$eventHub.fetchingItems[mediaType]["id" + currentId]){
                 this.currentDetails = this.$eventHub.fetchingItems[mediaType]["id" + currentId]
-                this.currentVideosKey = this.$eventHub.fetchingItems[mediaType]["id" + currentId].videos.results
+                this.currentVideosKey = this.$eventHub.fetchingItems[mediaType]["id" + currentId].videos.results || []
                 this.currentImages = this.$eventHub.fetchingItems[mediaType]["id" + currentId].images.posters || this.$eventHub.fetchingItems[mediaType]["id" + currentId].images.profiles
-                this.overview = this.$eventHub.fetchingItems[mediaType]["id" + currentId].overview || this.$eventHub.fetchingItems[mediaType]["id" + currentId].biography || '';
+                this.overview = this.$eventHub.fetchingItems[mediaType]["id" + currentId].overview || this.$eventHub.fetchingItems[mediaType]["id" + currentId].biography || ''
+                this.genres = this.$eventHub.fetchingItems[mediaType]["id" + currentId].genres || []
             }
-            
-            // this.currentVideosKey = this.$eventHub.fetchingItems[mediaType]["id" + currentId] ? this.$eventHub.fetchingItems[mediaType]["id" + currentId].videos.results : [];
-            
-            
             // this.currentSimilar = this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/smilar'] ? this.$eventHub.fetchingItems[mediaType]["id" + currentId + '/smilar'].results : [];
-            // console.log('video ID',  this.currentVideosKey)
-            // console.log('this.currentId',  this.currentId)
-            // console.log('this.categoryUrl',  this.categoryUrl)
 
-            this.genreIds = this.currentItem.genre_ids || [];
-            this.genres = [];
-            if(this.$eventHub.genres_current){
-                this.genreIds.forEach(id => {
-                    for (let key in this.$eventHub.genres_current) {
-                        if(this.$eventHub.genres_current[key].id === id)
-                        {this.genres.push(this.$eventHub.genres_current[key].name)}
-                    }
-                });
-            } 
-           this.visibleRateGenre = this.$route.path !== "/actors"
+            this.visibleRateGenre = mediaType !== "person"
+            if(this.$eventHub.favorites.indexOf(this.currentItem.id) !== -1){this.favorite = true}else{this.favorite = false}
+            if(this.$eventHub.bookmarks.indexOf(this.currentItem) !== -1){this.bookmarkItem = true}else{this.bookmarkItem = false}
+            // this.currentItem.media_type = this.checkMediaType(this.currentItem)
+            // this.$eventHub.viewed.push(this.currentItem)
+
+            if(this.$eventHub.viewed.indexOf(this.currentItem) === -1){
+                const item = this.currentItem
+                item.media_type = this.checkMediaType(item)
+                this.$eventHub.viewed.push(item)
+            }
+
+           console.log('this.$eventHub.viewed', this.$eventHub.viewed)
         },
         closeWindow(){
-            this.$eventHub.$emit('close-window');
+            this.$eventHub.$emit('close-window')
         },
         goBeforePage(){
             if (this.itemNumber === 0 && this.$eventHub[this.$route.name  + 'currentPage'] > 1){
-                this.$eventHub.$emit('update-page', this.$eventHub[this.$route.name  + 'currentPage'] - 1);
-                this.itemNumber = this.maxItemNumber;
+                this.$eventHub.$emit('update-page', this.$eventHub[this.$route.name  + 'currentPage'] - 1)
+                this.itemNumber = this.maxItemNumber
             }else{
-                this.itemNumber = this.itemNumber > 0 ? this.itemNumber - 1 : this.itemNumber;
-                this.updateItemData();
+                this.itemNumber = this.itemNumber > 0 ? this.itemNumber - 1 : this.itemNumber
+                this.updateItemData()
             }
-            this.changePageButtons();
+            this.changePageButtons()
         },
         goNextPage(){
             console.log('NextPage', this.$eventHub[this.$route.name + 'currentPage'], this.$eventHub[this.$route.name  + 'total'])
             if (this.itemNumber === 19 && this.$eventHub[this.$route.name + 'currentPage'] < this.$eventHub[this.$route.name  + 'total']){
                 this.$eventHub.$emit('update-page', this.$eventHub[this.$route.name  + 'currentPage'] + 1);
-                this.itemNumber = 0;
+                this.itemNumber = 0
                 
             }else{
-                this.itemNumber = this.itemNumber < this.maxItemNumber ? this.itemNumber + 1 : this.itemNumber;
-                this.updateItemData();
+                this.itemNumber = this.itemNumber < this.maxItemNumber ? this.itemNumber + 1 : this.itemNumber
+                this.updateItemData()
             } 
-            this.changePageButtons();
+            this.changePageButtons()
         },
         addFavorite(){
-            this.favorite = !this.favorite;
+            this.favorite = !this.favorite
+            if(this.favorite && this.$eventHub.favorites.indexOf(this.currentItem.id) === -1){this.$eventHub.favorites.push(this.currentItem.id)}else
+            if(!this.favorite && this.$eventHub.favorites.indexOf(this.currentItem.id) !== -1){
+                const deleteId = this.$eventHub.favorites.indexOf(this.currentItem.id)
+                this.$eventHub.favorites.splice(deleteId, 1)
+            }
+            console.log('addFavorite()', this.$eventHub.favorites)
         },
         addBookmark(){
-            this.bookmarkItem = !this.bookmarkItem;
+            this.bookmarkItem = !this.bookmarkItem
+            if(this.bookmarkItem && this.$eventHub.bookmarks.indexOf(this.currentItem) === -1){
+                const item = this.currentItem
+                item.media_type = this.checkMediaType(item)
+                this.$eventHub.bookmarks.push(item)
+            }else
+            if(!this.bookmarkItem && this.$eventHub.bookmarks.indexOf(this.currentItem) !== -1){
+                const deleteId = this.$eventHub.bookmarks.indexOf(this.currentItem)
+                this.$eventHub.bookmarks.splice(deleteId, 1)
+            }
+            console.log('addBookmark()', this.$eventHub.bookmarks)
         },
         changePageButtons(){
             this.beforeButtonVisible = this.itemNumber > 0 || this.$eventHub[this.$route.name + 'currentPage'] > 1 ? true : false;
-            this.nextButtonVisible = this.itemNumber < this.maxItemNumber || this.itemNumber === 19 ? true : false;
+            this.nextButtonVisible = this.itemNumber < this.maxItemNumber || this.itemNumber === 19 ? true : false
         },
         checkMediaType(item){
             // console.log('MEDIATYPE', item.media_type)
             let mediaType = ''
-            if (this.$route.name === "search"){mediaType = item.media_type}
+            if (this.$route.name === "search" || this.$route.name === "bookmarks" || this.$route.name === "viewed"){mediaType = item.media_type}
             if (this.$route.path.indexOf("movies") !== -1){mediaType = "movie"}
             if (this.$route.path.indexOf("series") !== -1){mediaType = "tv"}
             if (this.$route.path === "/actors"){mediaType = "person"}
@@ -354,7 +364,7 @@ export default {
         overflow-x: hidden;
         width: calc(100% + 18px);
         max-width: calc(100% + 18px);
-        height: 85vh;
+        height: 88vh;
         align-content: flex-start;
 
         &__text-area{
@@ -364,13 +374,24 @@ export default {
             width: 100%;
         }
         &__poster-area{
+            position: relative;
             img{
               box-shadow: 0px 20px 40px 10px rgba(0, 0, 0, 0.541);  
             } 
         }
+        &__poster-year{
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: white;
+            text-shadow: 1px 1px 2px black, 0px 0px 1em #7b1fa2;
+        }
+        &__poster-image{
+            width:100%;
+        }
         &__title {
             display: flex;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             align-content: center;
             justify-content: center;
             // span{
@@ -378,7 +399,7 @@ export default {
             // } 
         }
         &__tools-area{
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             margin-top: 8px;
             // background-color: #7b1fa2;
         }
@@ -419,8 +440,8 @@ export default {
             padding-top: 30px;
         }
         &__images-area{
-            height: 100%;
-            z-index: 500;
+            // height: 100%;
+            // z-index: 500;
         }
     }
     .content--xsmall{

@@ -1,5 +1,31 @@
 <template>
     <div class="card-container" @click.exact.stop="goToItem">
+        <!-- <img :src="posterImage" :alt="name"> -->
+        <!-- <v-container fluid grid-list-lg class="card-container__top-row">
+            <v-layout row>
+                <v-flex class="card-container__favorite" xs3>
+                    <v-btn flat icon color="white" v-if="favorite" @click="addFavorite"><v-icon>favorite</v-icon></v-btn>
+                    <v-btn flat icon color="white" v-else @click="addFavorite"><v-icon>favorite_border</v-icon></v-btn>
+                </v-flex>
+                <v-spacer></v-spacer>
+                <v-flex class="card-container__rate" xs3>
+                    <v-btn fab small color="accent" class="md-vote" v-show="voteVisible" light>{{vote}}</v-btn>
+                </v-flex>
+            </v-layout>
+        </v-container>
+        <v-container fluid grid-list-lg class="card-container__bottom-row">
+            <v-layout row align-content-space-between>
+                <v-flex class="card-container__title" xs10>
+                    <span class="md-subheading md-name">{{name}}</span> 
+                </v-flex>
+                <v-spacer></v-spacer>
+                <v-flex class="card-container__date" xs2>
+                    <span class="md-caption md-date">{{dates}}</span>
+                </v-flex>
+            </v-layout>
+        </v-container> -->
+
+
         <md-card>
             <md-card-media-cover md-text-scrim>
                 <md-card-media md-ratio="4:3" >
@@ -7,7 +33,7 @@
                 </md-card-media>
                 <md-card-area class="md-area_top">
                     <md-card-actions class="action-button">
-                        <v-btn flat icon color="white" v-if="favorite" @click="addFavorite"><v-icon>favorite</v-icon></v-btn>
+                        <v-btn flat icon color="white" v-if="watchFavirite" @click="addFavorite"><v-icon>favorite</v-icon></v-btn>
                         <v-btn flat icon color="white" v-else @click="addFavorite"><v-icon>favorite_border</v-icon></v-btn>
                         <v-btn fab small color="accent" class="md-vote" v-show="voteVisible" light>{{vote}}</v-btn>
                     </md-card-actions>
@@ -30,6 +56,7 @@ export default {
     props: ['item', 'keyItem'],
     data: () => ({
         favorite: false,
+        favoriteState: [],
         // item: {},
         dates: '',
         name: '',
@@ -43,42 +70,53 @@ export default {
         this.dates = this.item.release_date !== undefined ? this.item.release_date.split("-") : this.item.first_air_date !== undefined ? this.item.first_air_date.split("-") : '';
         this.dates = this.dates !== '' ? '('+this.dates[0]+')' : this.dates;
         this.name = typeof this.item.title !== 'undefined' ? this.item.title : typeof this.item.name !== 'undefined' ? this.item.name : '';
-        this.vote = this.item.vote_average || "";
-        this.overview = this.item.overview || "";
+        this.vote = this.item.vote_average || ""
+        this.overview = this.item.overview || ""
         
-        const posterLink = this.item.poster_path || this.item.profile_path || null;
-        this.posterImage = posterLink ? 'https://image.tmdb.org/t/p/w185_and_h278_bestv2' + posterLink : require('../assets/img/template.png') 
+        const posterLink = this.item.poster_path || this.item.profile_path || null
+        this.posterImage = posterLink ? 'https://image.tmdb.org/t/p/w342' + posterLink : require('../assets/img/template.png') 
         // this.posterImage = this.item.poster_path !== undefined ? ('https://image.tmdb.org/t/p/w600_and_h900_bestv2' + this.item.poster_path) : this.item.profile_path !== undefined ? ('https://image.tmdb.org/t/p/w600_and_h900_bestv2' + this.item.profile_path) : ('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2ps_wFCVW5isXGJbaMsZzIReFLuVEswQfY2txdZldeH-owR36');
         // this.posterImage = this.item.poster_path !== null ? ('https://image.tmdb.org/t/p/w600_and_h900_bestv2' + this.item.poster_path) : ('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR2ps_wFCVW5isXGJbaMsZzIReFLuVEswQfY2txdZldeH-owR36');
-        this.voteVisible = this.vote === "" ? false : true;
+        this.voteVisible = this.vote === "" ? false : true
+        if(this.$eventHub.favorites.indexOf(this.item.id) !== -1){this.favorite = true}
+        this.favoriteState = this.$eventHub.favorites
     },
     methods: {
         goToItem(){
             if(this.blockButton === true){
-                this.$eventHub["current_item"] = this.item;
-                this.$eventHub["current_item_number"] = this.keyItem;
-                this.$eventHub.$emit('go-to-item');
+                this.$eventHub["current_item"] = this.item
+                this.$eventHub["current_item_number"] = this.keyItem
+                this.$eventHub.$emit('go-to-item')
                 // this.$eventHub.$emit('on-item', this.item);
                 // console.log('ITEM ALL', this.item)
                 // console.log('THIS KEY', this.keyItem)
             }
-        this.blockButton = true;
+        this.blockButton = true
         },
         addFavorite(){
-            this.favorite = !this.favorite;
-            this.blockButton = false;
-            console.log('ITEM Child', this.item)
+            this.favorite = !this.favorite
+            this.blockButton = false
+            if(this.favorite && this.$eventHub.favorites.indexOf(this.item.id) === -1){this.$eventHub.favorites.push(this.item.id)}else
+            if(!this.favorite && this.$eventHub.favorites.indexOf(this.item.id) !== -1){
+                const deleteId = this.$eventHub.favorites.indexOf(this.item.id)
+                this.$eventHub.favorites.splice(deleteId, 1)
+            }
+        }
+    },
+    computed:{
+        watchFavirite(){
+            const state = this.favoriteState
+            if(state.indexOf(this.item.id) !== -1){this.favorite = true}else{this.favorite = false}
+            let favorite = this.favorite
+            return favorite
         }
     }
-  
 }
 </script>
 
 <style lang="scss" scoped>
 .card-container {
-    // width: 320px;
-    
-        .md-card {
+           .md-card {
             margin: 4px auto;
             display: block;
             .md-card-media-cover{
@@ -125,7 +163,7 @@ export default {
                     align-items: flex-end;
                     padding-bottom: 5px;
                     justify-content: space-between;
-                    width: 100%;
+                    // width: 100%;
                     .md-name {
                         line-height: 18px;
                     }
@@ -138,27 +176,27 @@ export default {
                 
         }
 }
-.md-tooltip{
-    // display: block;
-    width: 30vw;
-    height: auto;
-    background-color: #69F0AE;
-    // opacity: .8;
-    // word-wrap: break-word !important;
-    white-space: normal;
-    // overflow: hidden;
-    // clear: both;
-    color: #7b1fa2;
-    // .caption{
-    //     color: #7b1fa2;
-    // }
-    // .md-content {
-    //     width: 200px !important;
-    //     height: 200px;
-    //     display: inline-flex;
-    //     justify-content: center;
-    //     align-items: center;
-    //     background-color: #69F0AE !important;
-    // }
-}
+// .md-tooltip{
+//     // display: block;
+//     width: 30vw;
+//     height: auto;
+//     background-color: #69F0AE;
+//     // opacity: .8;
+//     // word-wrap: break-word !important;
+//     white-space: normal;
+//     // overflow: hidden;
+//     // clear: both;
+//     color: #7b1fa2;
+//     // .caption{
+//     //     color: #7b1fa2;
+//     // }
+//     // .md-content {
+//     //     width: 200px !important;
+//     //     height: 200px;
+//     //     display: inline-flex;
+//     //     justify-content: center;
+//     //     align-items: center;
+//     //     background-color: #69F0AE !important;
+//     // }
+// }
 </style>

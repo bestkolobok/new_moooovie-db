@@ -26,6 +26,8 @@ export default new Router({
         { path: '/search', name: 'search', component: Content },
         { path: '/movies/search', name: 'searchMovies', component: Content },
         { path: '/series/search', name: 'searchSeries', component: Content },
-        { path: '/actors/search', name: 'searchActors', component: Content }
+        { path: '/actors/search', name: 'searchActors', component: Content },
+        { path: '/bookmarks', name: 'bookmarks', component: Content },
+        { path: '/viewed', name: 'viewed', component: Content }
     ]
 })

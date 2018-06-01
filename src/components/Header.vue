@@ -1,8 +1,7 @@
 <template>
     <!-- <v-toolbar :clipped-left="$vuetify.breakpoint.mdAndUp" class="primary toolbar" dark app scroll-off-screen :scroll-threshold="50" dense prominent extended> -->
     <v-toolbar 
-        v-resize="onResize"
-        :clipped-left="$vuetify.breakpoint.mdAndUp" 
+        v-resize="onResize" 
         class="primary toolbar" 
         dark app dense :prominent="toolbarVisible && extendedVisible" :extended="toolbarVisible && extendedVisible"
         :style="{top: '-' + onScrollStyle + 'px'}"
@@ -21,24 +20,27 @@
             class="toolbar-search"
             :class="!visibleSearch ? 'hidden-sm-and-down' : ''"
             v-model="inputData" 
+            v-if="hideSearch "
             @keyup.enter="enterSearch"
         ></v-text-field>
-        <v-btn icon @click="visibleSearch = true" class="hidden-md-and-up" v-if="!visibleSearch">
+        <v-btn icon @click="visibleSearch = true" class="hidden-md-and-up" v-if="!visibleSearch && hideSearch">
             <v-icon>search</v-icon>
         </v-btn>
         <v-btn icon @click.stop="drawerRightToggle" class="hidden-md-and-up">
             <v-icon>apps</v-icon>
         </v-btn>
         <v-tabs
+            :hide-slider="!activeTabs"
             slot="extension"
             v-model="currentItem"
             fixed-tabs
             color="transparent"
             slider-color="white"
-            v-if="toolbarVisible && extendedVisible"
+            v-show="toolbarVisible && extendedVisible"
             class="tabs hidden-xs-only"
         >
             <v-tab
+                :active-class="activeTabs ? 'tabs__item--active' : ''"
                 v-for="item in mediaTypeItems"
                 :key="item.id"
                 :href="'#tab-' + item"
@@ -105,6 +107,8 @@ export default {
     components: { Fetch },
     data(){
         return{
+            activeTabs: true,
+            hideSearch: true,
             visibleSearch: false,
             visibleMovieCategory: false,
             visibleTvCategory: false,
@@ -116,7 +120,7 @@ export default {
             genreActive: '',
             categoryActive: '',
             onScrollStyle: 0,
-            onScrollOffsetOld: 0,
+            // onScrollOffsetOld: 0,
             titleSize:'title',
             // drawer: false,
             genresName: [],
@@ -166,7 +170,7 @@ export default {
                 const deleteId = this.selectedGenres.indexOf(currentId)
                 this.selectedGenres.splice(deleteId, 1)
             }
-            this.genreListMark()
+            this.genreListMark(this.selectedGenres)
             this.$eventHub.$emit('change-genre-header', this.selectedGenres)
             // console.log('this.selectedGenres', this.selectedGenres)
         },
@@ -198,12 +202,9 @@ export default {
             // console.log(e.currentTarget.firstChild.dataset.path)
         },
         categoryItemsMark() {
-            let child
-            child = this.visibleMovieCategory ? document.querySelector(".movies-child-elem") : null
-            child = this.visibleTvCategory ? document.querySelector(".mtv-child-elem") : null
-
-            // if(this.visibleMovieCategory){child = document.querySelector(".movies-child-elem")}
-            // if(this.visibleTvCategory){child = document.querySelector(".tv-child-elem")}
+            let child = null
+            if(this.visibleMovieCategory){child = document.querySelector(".movies-child-elem")}
+            if(this.visibleTvCategory){child = document.querySelector(".tv-child-elem")}
             if(child !== null){
                 const elementsGroup = Array.from(child.parentNode.children)
                 elementsGroup.forEach(elem => { 
@@ -254,11 +255,11 @@ export default {
             }
         },
         changeGenre(id){
-            if (this.$route.name.indexOf("movies") !== -1){
+            if (this.$route.path.indexOf("movies") !== -1){
                 this.$eventHub.$emit('genre-select', id, "movie")
                 // this.$eventHub['selectedGenres_movies'] = this.selectedGenres;
             }else
-            if (this.$route.name.indexOf("series") !== -1){
+            if (this.$route.path.indexOf("series") !== -1){
                 this.$eventHub.$emit('genre-select', id, "tv")
                 // this.$eventHub['selectedGenres_series'] = this.selectedGenres;
             }
@@ -282,11 +283,11 @@ export default {
             this.categoryItemsMark()
             this.$eventHub.$emit('update-category')
         },
-        scrollHeader(offset){
-            if(offset > this.onScrollOffsetOld + 50){this.onScrollStyle = 50}else 
-            if(offset < this.onScrollOffsetOld - 50){this.onScrollStyle = 0}
-            setTimeout(()=>this.onScrollOffsetOld = offset, 300)
-        },
+        // scrollHeader(offset){
+        //     if(offset > this.onScrollOffsetOld + 50){this.onScrollStyle = 50}else 
+        //     if(offset < this.onScrollOffsetOld - 50){this.onScrollStyle = 0}
+        //     setTimeout(()=>this.onScrollOffsetOld = offset, 300)
+        // },
         onResize () {
             this.extendedVisible = window.innerWidth < 600 ? false : true
             // console.log(this.extendedVisible)
@@ -302,6 +303,8 @@ export default {
             this.routeNameOld = from.name;
             this.routeName = to.name;
             this.watchRoutes(to,from)
+            this.hideSearch = to.name !== "bookmarks" && to.name !== "viewed"
+            this.activeTabs = to.name !== "bookmarks" && to.name !== "viewed"
         },
         genresName(){
             this.$eventHub.genres_current = this.genresName
@@ -321,7 +324,7 @@ export default {
     mounted(){
         const to = this.$route
         this.watchRoutes(to)
-        this.$eventHub.$on('scroll-header', this.scrollHeader)
+        this.$eventHub.$on('scroll-header', offset => this.onScrollStyle = offset)
         this.$eventHub.$on('change-genre-drawer', this.changeGenreDrawer)
         this.$eventHub.$on('genres-list-remove', this.genreListRemove)
     }

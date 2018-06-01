@@ -131,17 +131,14 @@ export default {
       if(e.currentTarget.firstChild.dataset.link !== "/movies" && e.currentTarget.firstChild.dataset.link !== "/series"){e.currentTarget.classList.add('success')}
       // this.changeCategory(e.currentTarget.firstChild.dataset.path)
       // console.log(e.currentTarget.firstChild.dataset.path)
-      console.log('categoryItemsSet(e)')
+      // console.log('categoryItemsSet(e)')
     },
     categoryItemsMark() {
-      let child
-        child = this.visibleMovieCategory ? document.querySelector(".movies-child-elem") : null
-        child = this.visibleTvCategory ? document.querySelector(".mtv-child-elem") : null
-
-      // if(this.pages[1].visible){child = document.querySelector(".movies-child-elem1")}
-      // if(this.pages[2].visible){child = document.querySelector(".tv-child-elem1")}
+      let child = null
+      if(this.pages[1].visible){child = document.querySelector(".movies-child-elem1")}
+      if(this.pages[2].visible){child = document.querySelector(".tv-child-elem1")}
       if(child !== null){
-        console.log('child', child)
+        // console.log('child', child)
         const elementsGroup = Array.from(child.parentNode.children)
         elementsGroup.forEach(elem => { 
           const path = elem.firstChild.dataset.link
@@ -168,6 +165,7 @@ export default {
       const route = this.$route.name
       this.pages[1].visible = this.$route.path.indexOf("movies") !== -1
       this.pages[2].visible = this.$route.path.indexOf("series") !== -1
+      this.pages[0].visible = this.$route.path.indexOf("series") !== -1 || this.$route.path.indexOf("movies") !== -1
 
       if (route === 'moviesUpcoming' || route === 'moviesNowPlaying' || route === 'moviesPopular' || route === 'moviesTopRated'){this.pages[1].clearVisible = true} else {this.pages[1].clearVisible = false}
       if (route === 'seriesPopular' || route === 'seriesOnTheAir' || route === 'seriesTopRated'){this.pages[2].clearVisible = true} else {this.pages[2].clearVisible = false}

@@ -7,13 +7,13 @@
         ></gallery>
         <div class="scroll-bar">
             <div class="image"
-                v-for="(image, imageIndex) in images"
+                v-for="(image, imageIndex) in setImages"
                 :key="image.id" 
                 @click="open(imageIndex)"
                 :style="{ 
                     backgroundImage: 'url(' + image + ')', 
-                    width: $vuetify.breakpoint.smAndUp ?  $vuetify.breakpoint.lgAndUp ? 'calc(25% - 10px)' : 'calc(33.3% - 10px)' : '100%', 
-                    height: '200px' 
+                    width: $vuetify.breakpoint.smAndUp ?  $vuetify.breakpoint.lgAndUp ? 'calc(16.6% - 10px)' : 'calc(25% - 10px)' : 'calc(50% - 10px)', 
+                    height: '150px' 
                 }"
             >
             </div>
@@ -47,14 +47,23 @@ export default {
         //     }) 
         // }
     },
-    watch: {
-        fetchingImages(){
+    computed:{
+        setImages(){
             this.images = []
             this.fetchingImages.forEach((item, i) => {
                 this.images[i] = 'https://image.tmdb.org/t/p/w500/' + item.file_path
-            }) 
+            })
+            return this.images
         }
-    }
+    },
+    // watch: {
+    //     fetchingImages(){
+    //         this.images = []
+    //         this.fetchingImages.forEach((item, i) => {
+    //             this.images[i] = 'https://image.tmdb.org/t/p/w500/' + item.file_path
+    //         }) 
+    //     }
+    // }
     
 }
 </script>
@@ -70,14 +79,19 @@ export default {
         margin: 5px;
     }
 
-    .scroll-bar{
-        //   max-width: 80vw;
-        //   white-space: nowrap; 
-        //   overflow-x: scroll;
+    // .scroll-bar{
+    //     //   max-width: 80vw;
+    //     //   white-space: nowrap; 
+    //     //   overflow-x: scroll;
 
-  }
+    // }
     .gallery{
-        margin: 30px;
+        // margin: 30px;
+        margin: 0 auto 30px;
+        max-width: 1218px;
+        height: 88vh;
+        width: 95%;
+        top: 6%;
     }
     // .gallery-xs{
     //     .prev{

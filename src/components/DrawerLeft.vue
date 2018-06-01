@@ -69,8 +69,8 @@ export default {
             { text: 'Топ 100', link: '/series/topRated' }
           ]
         },
-        { icon: 'bookmark', text: 'Закладки', link: '/' },
-        { icon: 'history', text: 'История просмотра', link: '/' },
+        { icon: 'bookmark', text: 'Закладки', link: '/bookmarks' },
+        { icon: 'history', text: 'История просмотра', link: '/viewed' },
         { icon: 'search', text: 'История поиска', link: '/' },
         { icon: 'account_circle', text: 'Вход в аккаунт', link: '/' },
       ]

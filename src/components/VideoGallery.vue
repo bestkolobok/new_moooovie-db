@@ -8,7 +8,7 @@
         ></gallery>
         <div class="scroll-bar">
             <div class="image"
-                v-for="(image, imageIndex) in images"
+                v-for="(image, imageIndex) in setVideos"
                 :key="image.id" 
                 @click="open(imageIndex)"
                 :style="{ 
@@ -42,8 +42,8 @@ export default {
             this.$eventHub.$emit('stop-change-item', false)
         }
     },
-    watch: {
-        fetchingVideos(){
+    computed:{
+        setVideos(){
             this.images = []
             this.fetchingVideos.forEach((item, i) => {
                 this.images[i] = {type: 'text/html'}
@@ -52,9 +52,9 @@ export default {
                 this.images[i].poster = 'https://img.youtube.com/vi/' + item.key + '/maxresdefault.jpg'
                 this.images[i].title = item.name
             }) 
+            return this.images
         }
     }
-    
 }
 </script>
 
@@ -69,14 +69,19 @@ export default {
         margin: 5px;
     }
 
-    .scroll-bar{
-        //   max-width: 80vw;
-        //   white-space: nowrap; 
-        //   overflow-x: scroll;
+    // .scroll-bar{
+    //     //   max-width: 80vw;
+    //     //   white-space: nowrap; 
+    //     //   overflow-x: scroll;
 
-  }
+    // }
+
     .gallery{
-        margin: 30px;
+        margin: 0 auto 30px;
+        max-width: 1218px;
+        height: 88vh;
+        width: 95%;
+        top: 6%;
     }
     // .gallery-xs{
     //     .prev{

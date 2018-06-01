@@ -89,16 +89,9 @@ export default {
             .then(data => data.data)
             .catch(error => { console.error(error); return Promise.reject(error) })
     },
-
-    // getItemPages(id, mediaType, item) {
-    //     return axios
-    //         .get(`https://api.themoviedb.org/3/${mediaType}/${id}${item}?api_key=${this.apiKey}&language=${this.language}`)
-    //         .then(data => data.data)
-    //         .catch(error => { console.error(error); return Promise.reject(error) })
-    // },
-    getItemPages(id, mediaType, item) {
+    getItemPages(id, mediaType) {
         return axios
-            .get(`https://api.themoviedb.org/3/${mediaType}/${id}${item}?api_key=${this.apiKey}&language=${this.language}&append_to_response=videos,images`)
+            .get(`https://api.themoviedb.org/3/${mediaType}/${id}?api_key=${this.apiKey}&language=${this.language}&append_to_response=videos,images`)
             .then(data => data.data)
             .catch(error => { console.error(error); return Promise.reject(error) })
     },
