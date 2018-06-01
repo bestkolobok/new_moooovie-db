@@ -1,6 +1,0 @@
-@import "~vue-material/dist/theme/engine"; // Import the theme engine
-@include md-register-theme("default", ( primary: md-get-palette-color(Purple, 900), // The primary color of your application
-accent: md-get-palette-color(Purple, 100), // The accent or secondary color
-theme: dark // This can be dark or light
-));
-@import "~vue-material/dist/theme/all"; // Apply the theme
