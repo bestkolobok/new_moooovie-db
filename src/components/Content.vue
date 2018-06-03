@@ -23,7 +23,6 @@
 
 <script>
 /* eslint-disable */
-// import axios from 'axios'
 import Fetch from '@/common/fetch.js'
 import FilmCard from '@/components/FilmCard.vue'
 import ItemPage from '@/components/ItemPage.vue'

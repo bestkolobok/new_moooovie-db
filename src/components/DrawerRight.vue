@@ -70,11 +70,7 @@ export default {
             { name: 'Сейчас на экранах', link: '/series/onTheAir', class: 'tv-child-elem1' },
             { name: 'Топ 100', link: '/series/topRated', class: 'tv-child-elem1' }
           ]
-        },
-        // { icon: 'bookmark', text: 'Закладки', link: '/' },
-        // { icon: 'history', text: 'История просмотра', link: '/' },
-        // { icon: 'search', text: 'История поиска', link: '/' },
-        // { icon: 'account_circle', text: 'Вход в аккаунт', link: '/' },
+        }
       ],
       closeGenresArea: false,
       genreActive: '',
@@ -96,17 +92,14 @@ export default {
         this.selectedGenres.splice(deleteId, 1)
       }
       this.genreListMark()
-      // console.log('genreListSet(e)', this.selectedGenres)
       this.$eventHub.$emit('change-genre-drawer', this.selectedGenres)
     },
     genreListMark(){
       const child = document.querySelector(".genres-child-elem1")
       if(child !== null){
         const elementsGroup = Array.from(child.parentNode.children)
-        // console.log('elementsGroup', elementsGroup)
         elementsGroup.forEach(elem => { 
           const id = elem.firstChild.dataset.id
-          
           if(elem.classList.contains('success')){elem.classList.remove('success')}
           if(this.selectedGenres.indexOf(id) !== -1){elem.classList.add('success')} 
         })
@@ -118,7 +111,6 @@ export default {
       this.selectedGenres = []
       this.genreListMark()
       this.$eventHub.$emit('genres-list-remove')
-      console.log('genreListRemove()')
     },
     changeGenreHeader(selectedGenres){
       this.selectedGenres = selectedGenres
@@ -129,16 +121,12 @@ export default {
       const elements = Array.from(e.currentTarget.parentNode.children)
       elements.forEach(element => { element.classList.remove('success') })
       if(e.currentTarget.firstChild.dataset.link !== "/movies" && e.currentTarget.firstChild.dataset.link !== "/series"){e.currentTarget.classList.add('success')}
-      // this.changeCategory(e.currentTarget.firstChild.dataset.path)
-      // console.log(e.currentTarget.firstChild.dataset.path)
-      // console.log('categoryItemsSet(e)')
     },
     categoryItemsMark() {
       let child = null
       if(this.pages[1].visible){child = document.querySelector(".movies-child-elem1")}
       if(this.pages[2].visible){child = document.querySelector(".tv-child-elem1")}
       if(child !== null){
-        // console.log('child', child)
         const elementsGroup = Array.from(child.parentNode.children)
         elementsGroup.forEach(elem => { 
           const path = elem.firstChild.dataset.link
@@ -150,14 +138,12 @@ export default {
     onMarkList(e){
       if(e.currentTarget.firstChild.dataset.link){
         this.$router.push(e.currentTarget.firstChild.dataset.link)
-        // this.categoryItemsSet(e)
         this.categoryItemsMark()
       }else{this.genreListSet(e)}
     },
     onClearList(e){
       if(e.currentTarget.firstChild.dataset.link){
         this.$router.push(e.currentTarget.firstChild.dataset.link)
-        // this.categoryItemsSet(e)
         this.categoryItemsMark()
       }else{this.genreListRemove()}
     },

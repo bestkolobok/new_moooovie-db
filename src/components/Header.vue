@@ -26,12 +26,12 @@
         <v-btn icon @click="visibleSearch = true" class="hidden-md-and-up" v-if="!visibleSearch && hideSearch">
             <v-icon>search</v-icon>
         </v-btn>
-        <v-btn icon @click.stop="drawerRightToggle" class="hidden-md-and-up">
+        <v-btn icon @click.stop="drawerRightToggle" class="hidden-md-and-up" v-if="hideRightDriverButton">
             <v-icon>apps</v-icon>
         </v-btn>
         <v-tabs
             :hide-slider="!activeTabs"
-            slot="extension"
+            :slot="extendedVisible ? 'extension' : ''"
             v-model="currentItem"
             fixed-tabs
             color="transparent"
@@ -81,7 +81,7 @@
                 transition="scale-transition"
                 bottom
                 v-show="genresToolbarVisible"
-                >
+            >
                 <span class="tabs__item" slot="activator" dark>Категория</span>
                 <v-list v-show="visibleMovieCategory">
                     <v-list-tile class="movies-child-elem" v-for="(item, i) in movieItems" :key="i" :data-path="item.moviePath" @click="categoryItemsSet">
@@ -108,6 +108,7 @@ export default {
     data(){
         return{
             activeTabs: true,
+            hideRightDriverButton: true,
             hideSearch: true,
             visibleSearch: false,
             visibleMovieCategory: false,
@@ -120,13 +121,11 @@ export default {
             genreActive: '',
             categoryActive: '',
             onScrollStyle: 0,
-            // onScrollOffsetOld: 0,
             titleSize:'title',
-            // drawer: false,
             genresName: [],
-            genresSelectElement: null,
+            // genresSelectElement: null,
             selectedGenres: [],
-            categorySelected: '',
+            // categorySelected: '',
             inputData: null,
             searchLabel: '',
             routeName: null,
@@ -149,9 +148,7 @@ export default {
                 {categoryTv: 'Сейчас на экранах', tvPath: "/series/onTheAir" },
                 {categoryTv: 'Топ 100', tvPath: "/series/topRated" },
             ],
-
-            currentItem: null,
-
+            currentItem: null
         }
     },
     methods: {
@@ -172,13 +169,11 @@ export default {
             }
             this.genreListMark(this.selectedGenres)
             this.$eventHub.$emit('change-genre-header', this.selectedGenres)
-            // console.log('this.selectedGenres', this.selectedGenres)
         },
         genreListMark(selectedGenres){
             const child = document.querySelector(".genres-child-elem")
             if(child !== null){
                 const elementsGroup = Array.from(child.parentNode.children)
-                // console.log('elementsGroup', elementsGroup)
                 elementsGroup.forEach(elem => { 
                     const id = elem.firstChild.dataset.id
                     if(elem.classList.contains('success')){elem.classList.remove('success')}
@@ -199,7 +194,6 @@ export default {
             // if(e.currentTarget.firstChild.dataset.path !== "/movies" && e.currentTarget.firstChild.dataset.path !== "/series"){e.currentTarget.classList.add('success')}
             this.changeCategory(e.currentTarget.firstChild.dataset.path)
             this.categoryItemsMark()
-            // console.log(e.currentTarget.firstChild.dataset.path)
         },
         categoryItemsMark() {
             let child = null
@@ -240,11 +234,9 @@ export default {
             this.visibleSearch = false
         },
         changeCategory(category){
-            this.$router.push(category);
+            this.$router.push(category)
         },
         setGenresList(mediaCategory, type){
-            // this.genresName = []
-            // this.genreListRemove()
             if (typeof this.$eventHub['list' + type] !== 'undefined') {
                 this.genresName = this.$eventHub['list' + type]
             } else {
@@ -257,18 +249,13 @@ export default {
         changeGenre(id){
             if (this.$route.path.indexOf("movies") !== -1){
                 this.$eventHub.$emit('genre-select', id, "movie")
-                // this.$eventHub['selectedGenres_movies'] = this.selectedGenres;
             }else
             if (this.$route.path.indexOf("series") !== -1){
                 this.$eventHub.$emit('genre-select', id, "tv")
-                // this.$eventHub['selectedGenres_series'] = this.selectedGenres;
             }
-            this.$eventHub.selectedGenres_current = this.selectedGenres;
-            // if(this.routeName === this.routeNameOld){
-                this.$eventHub.$emit('page-reset', 1);
-            // }
-            this.routeName = this.routeNameOld;
-            // this.showCloseButton();
+            this.$eventHub.selectedGenres_current = this.selectedGenres
+            this.$eventHub.$emit('page-reset', 1)
+            this.routeName = this.routeNameOld
         },
         watchRoutes(to,from){
             if(from !== undefined && !((to.path.indexOf("movies") !== -1 && from.path.indexOf("movies") !== -1) || (to.path.indexOf("series") !== -1 && from.path.indexOf("series") !== -1)) ) {this.genreListRemove()}
@@ -278,24 +265,17 @@ export default {
             if (to.path.indexOf("movies") !== -1){this.visibleMovieCategory = true; this.setGenresList('movie', 'movies')}else{this.visibleMovieCategory = false}
             if (to.path.indexOf("series") !== -1){this.visibleTvCategory = true; this.setGenresList('tv', 'series')}else{this.visibleTvCategory = false}
             if (to.path.indexOf("movies") !== -1 || to.name.indexOf("series") !== -1){this.genresToolbarVisible = true}else{this.genresToolbarVisible = false}
-            if (to.name === "movies" || to.name === "series"){this.categorySelected = ''}
+            // if (to.name === "movies" || to.name === "series"){this.categorySelected = ''}
             this.searchLabel = to.name.indexOf("movies") !== -1 ? 'фильмов' : to.name.indexOf("series") !== -1 ? 'сериалов' : to.name.indexOf("actors") !== -1 ? 'актеров' : 'по сайту';
             this.categoryItemsMark()
             this.$eventHub.$emit('update-category')
         },
-        // scrollHeader(offset){
-        //     if(offset > this.onScrollOffsetOld + 50){this.onScrollStyle = 50}else 
-        //     if(offset < this.onScrollOffsetOld - 50){this.onScrollStyle = 0}
-        //     setTimeout(()=>this.onScrollOffsetOld = offset, 300)
-        // },
         onResize () {
             this.extendedVisible = window.innerWidth < 600 ? false : true
-            // console.log(this.extendedVisible)
         },
         changeGenreDrawer(selectedGenres){
             this.genreListMark(selectedGenres)
             this.selectedGenres = selectedGenres
-            // console.log('changeGenreDrawer', this.selectedGenres)
         }
     },
     watch: {
@@ -305,6 +285,7 @@ export default {
             this.watchRoutes(to,from)
             this.hideSearch = to.name !== "bookmarks" && to.name !== "viewed"
             this.activeTabs = to.name !== "bookmarks" && to.name !== "viewed"
+            this.hideRightDriverButton = to.name !== "bookmarks" && to.name !== "viewed"
         },
         genresName(){
             this.$eventHub.genres_current = this.genresName
@@ -312,8 +293,8 @@ export default {
         },
         inputData(){
             if(this.inputData){
-                this.onSearchDebounse();
-                this.clearInput();
+                this.onSearchDebounse()
+                this.clearInput()
             }
         },
     },

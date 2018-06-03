@@ -4,10 +4,11 @@ let dateNow = new Date()
 const releaseMonthBefore = MdbConfig.releaseMonthBefore
 const releaseMonthAfter = MdbConfig.releaseMonthAfter
 const nowPlaingMonthAfter = MdbConfig.nowPlaingMonthAfter
-const releaseDateMax = `${(dateNow.getMonth() + releaseMonthBefore) < 12 ? dateNow.getFullYear() : (dateNow.getFullYear() + 1)}-${(dateNow.getMonth() + releaseMonthBefore) < 12 ? (dateNow.getMonth() + releaseMonthBefore) : (dateNow.getMonth() - 12 + releaseMonthBefore)}-${dateNow.getDay()}`
-const releaseDateMin = `${(dateNow.getMonth() + releaseMonthAfter) > 0 ? dateNow.getFullYear() : (dateNow.getFullYear() - 1)}-${(dateNow.getMonth() + releaseMonthAfter) > 0 ? (dateNow.getMonth() + releaseMonthAfter) : (dateNow.getMonth() + 12 + releaseMonthAfter)}-${dateNow.getDay()}`
-const nowPlaingDateMin = `${(dateNow.getMonth() + nowPlaingMonthAfter) > 0 ? dateNow.getFullYear() : (dateNow.getFullYear() - 1)}-${(dateNow.getMonth() + nowPlaingMonthAfter) > 0 ? (dateNow.getMonth() + nowPlaingMonthAfter) : (dateNow.getMonth() + 12 + nowPlaingMonthAfter)}-${dateNow.getDay()}`
-const airDate = `${dateNow.getFullYear()}-${dateNow.getMonth()}-${dateNow.getDay()}`
+const releaseDateMax = `${(dateNow.getMonth() + releaseMonthBefore) < 12 ? dateNow.getFullYear() : (dateNow.getFullYear() + 1)}-${(dateNow.getMonth() + releaseMonthBefore) < 12 ? (dateNow.getMonth() + releaseMonthBefore) : (dateNow.getMonth() - 12 + releaseMonthBefore)}-${dateNow.getDate()}`
+const releaseDateMin = `${(dateNow.getMonth() + releaseMonthAfter) > 0 ? dateNow.getFullYear() : (dateNow.getFullYear() - 1)}-${(dateNow.getMonth() + releaseMonthAfter) > 0 ? (dateNow.getMonth() + releaseMonthAfter) : (dateNow.getMonth() + 12 + releaseMonthAfter)}-${dateNow.getDate()}`
+const nowPlaingDateMin = `${(dateNow.getMonth() + nowPlaingMonthAfter) > 0 ? dateNow.getFullYear() : (dateNow.getFullYear() - 1)}-${(dateNow.getMonth() + nowPlaingMonthAfter) > 0 ? (dateNow.getMonth() + nowPlaingMonthAfter) : (dateNow.getMonth() + 12 + nowPlaingMonthAfter)}-${dateNow.getDate()}`
+const airDate = `${dateNow.getFullYear()}-${dateNow.getMonth()}-${dateNow.getDate()}`
+
 
 
 export default {
