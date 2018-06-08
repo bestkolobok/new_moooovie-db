@@ -1,6 +1,6 @@
 # Moooovie-db
 
-An app for rewiewing movies, TV series and actors.
+An app for reviewing movies, TV series and actors.
 > Test project for Vue.js learning
 
 
